@@ -21,6 +21,9 @@ This skill defines the technical rules, architectural guardrails, and coding pat
   - `packages/users` imports only from `packages/shared` and external NPM dependencies.
   - `packages/todos` imports only from `packages/shared` and external NPM dependencies.
   - `packages/shared` imports only from external NPM dependencies.
+- **Rule 3: Decoupled Backend Service.**
+  - `services/bff` (.NET 8 Minimal API) is completely decoupled. Frontend packages NEVER import .NET code or direct binaries.
+  - All communication between frontend and backend occurs strictly over HTTP REST endpoints typed via `packages/shared`.
 
 ### 1.2 Export Encapsulation
 - Every package exposes its public API strictly through its root `src/index.ts`.

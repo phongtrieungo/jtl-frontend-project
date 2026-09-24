@@ -1,7 +1,7 @@
 # Sprint Planning & Engineering Execution Roadmap
 
 ## Executive Overview
-This document establishes the comprehensive development plan for the **User & ToDo Monorepo Platform**. Structured across 7 focused sprints, this plan guides implementation from initial repository foundation through feature development, optimistic mutation resilience, routing composition, and final documentation deliverables.
+This document establishes the comprehensive development plan for the **User & ToDo Monorepo Platform**. Structured across 7 focused sprints, this plan guides implementation from repository foundation through feature packages, .NET 8 BFF service, optimistic mutation resilience, routing composition, and final documentation deliverables.
 
 Each story adheres to standard agile requirements:
 - **User Story Statement** (`As a... I want... So that...`)
@@ -12,7 +12,7 @@ Each story adheres to standard agile requirements:
 ---
 
 ## Sprint 1: Monorepo Foundation & Tooling Setup
-**Goal:** Establish an efficient, type-safe Turborepo monorepo with workspace isolation, unified TypeScript configurations, and zero-overhead build pipelines.
+**Goal:** Establish an efficient, type-safe Turborepo monorepo with workspace isolation, unified TypeScript configurations, and multi-service development pipelines.
 
 ### Story 1.1: Monorepo Topology & Turborepo Pipeline Configuration
 - **ID:** `STORY-101`
@@ -20,13 +20,13 @@ Each story adheres to standard agile requirements:
   *As an engineer, I want a cleanly configured Turborepo monorepo with defined workspace packages so that tasks (`build`, `lint`, `dev`) execute predictably across all modules.*
 - **Scope & Targets:**
   - `package.json` (root workspace definition)
-  - `pnpm-workspace.yaml` (defining `apps/*` and `packages/*`)
+  - `pnpm-workspace.yaml` (defining `apps/*`, `packages/*`, and `services/*`)
   - `turbo.json` (pipeline rules for `build`, `lint`, `dev`, `check-types`)
-  - `.gitignore` (standard Node, Turbo, Vite, and macOS ignores)
+  - `.gitignore` (standard Node, Turbo, Vite, and .NET ignores)
 - **Acceptance Criteria:**
   - **Given** the monorepo root directory,
   - **When** running package manager install,
-  - **Then** workspaces `apps/web`, `packages/shared`, `packages/users`, and `packages/todos` are recognized and linked without warnings.
+  - **Then** workspaces `apps/web`, `packages/shared`, `packages/users`, `packages/todos`, and `services/bff` are recognized and linked without warnings.
   - **When** executing `turbo build`,
   - **Then** build tasks execute in topological order without circular dependency deadlocks.
 - **Architectural Check:** Ensure no workspace package has direct file dependencies outside the monorepo structure.
@@ -34,12 +34,12 @@ Each story adheres to standard agile requirements:
 ### Story 1.2: Shared TypeScript, ESLint & Tailwind Configurations
 - **ID:** `STORY-102`
 - **User Story:**  
-  *As an engineer, I want shared configuration packages for TypeScript, ESLint, and TailwindCSS so that all packages maintain identical quality standards and style tokens.*
+  *As an engineer, I want shared configuration packages for TypeScript, ESLint, and TailwindCSS so that all frontend packages maintain identical quality standards and style tokens.*
 - **Scope & Targets:**
   - `tsconfig.base.json` (strict type-checking rules)
   - Boundary lint rules prohibiting cross-feature imports between `users` and `todos`.
 - **Acceptance Criteria:**
-  - **Given** any package in the repository,
+  - **Given** any frontend package in the repository,
   - **When** compiling with TypeScript,
   - **Then** strict null checks, no implicit any, and composite project references are enforced.
   - **Given** code in `packages/users`,
@@ -48,8 +48,8 @@ Each story adheres to standard agile requirements:
 
 ---
 
-## Sprint 2: Core Domain, Shared UI Kit & In-Memory Mock Engine (`packages/shared`)
-**Goal:** Deliver the foundational building blocks: shared domain contracts, atomic Jotai primitives, in-memory data engine with latency/chaos support, and reusable presentation components.
+## Sprint 2: Core Domain, Dual-Mode API Adapter & Shared UI Kit (`packages/shared`)
+**Goal:** Deliver the foundational building blocks: shared domain contracts, atomic Jotai primitives, dual-mode API client adapter (BFF + In-Browser Mock), and reusable presentation components.
 
 ### Story 2.1: Domain Type Contracts & Query Key Factories
 - **ID:** `STORY-201`
@@ -66,25 +66,26 @@ Each story adheres to standard agile requirements:
   - **Given** `userKeys` and `todoKeys` factories,
   - **Then** calling `todoKeys.byUser('123')` returns `['todos', 'list', { userId: '123' }]` typed as const tuple.
 
-### Story 2.2: In-Memory Mock Database & Chaos Simulation Engine
+### Story 2.2: Dual-Mode API Client & In-Browser Mock Engine
 - **ID:** `STORY-202`
 - **User Story:**  
-  *As an evaluator or tester, I want an in-memory database with artificial latency and a toggleable chaos mode so that I can observe realistic loading states and deterministically test optimistic rollbacks.*
+  *As an evaluator or tester, I want a dual-mode API client that connects to the .NET 8 BFF when available and automatically falls back to an in-browser mock engine if the backend is absent.*
 - **Scope & Targets:**
+  - `packages/shared/src/api/apiClient.ts`
   - `packages/shared/src/api/mockDb.ts`
-  - `packages/shared/src/api/chaosEngine.ts`
+  - `packages/shared/src/api/httpBffClient.ts`
 - **Acceptance Criteria:**
-  - **Given** the mock DB initialized with seed users and todos,
-  - **When** any query method is called (`getUsers`, `getUserById`, `getTodosByUser`),
-  - **Then** it resolves with data after an artificial delay of 200-400ms.
-  - **Given** chaos mode is activated (`isChaosMode = true`),
-  - **When** calling `createTodo` or `createUser`,
-  - **Then** the request rejects with a `500 Simulated Network Failure` error after the latency duration.
+  - **Given** `VITE_API_MODE=mock` or BFF offline,
+  - **When** calling any API method,
+  - **Then** the request resolves using the in-browser mock engine with 200-400ms simulated latency.
+  - **Given** `VITE_API_MODE=bff` and BFF running,
+  - **When** calling any API method,
+  - **Then** the request forwards to `http://localhost:5000/api` over HTTP.
 
 ### Story 2.3: Shared UI Primitives & Accessible Feedback Components
 - **ID:** `STORY-203`
 - **User Story:**  
-  *As a user, I want accessible, consistently styled UI primitives (Buttons, Inputs, Cards, Badges, Alert Toasts) so that interactions are clear, responsive, and keyboard-friendly.*
+  *As a user, I want accessible, consistently styled UI primitives (Buttons, Inputs, Cards, Badges, Alert Toasts) using the Slate + Indigo palette so that interactions are clear and responsive.*
 - **Scope & Targets:**
   - `packages/shared/src/components/Button.tsx`
   - `packages/shared/src/components/Input.tsx`
@@ -97,12 +98,12 @@ Each story adheres to standard agile requirements:
   - **When** an error prop is passed,
   - **Then** it sets `aria-invalid="true"` and renders the error message associated via `aria-describedby`.
   - **Given** any interactive element (Button, Input),
-  - **Then** it renders a prominent visible focus ring on keyboard focus (`focus-visible:ring-2`).
+  - **Then** it renders a prominent visible focus ring on keyboard focus (`focus-visible:ring-2 focus-visible:ring-indigo-600`).
 
 ### Story 2.4: Cross-Cutting Jotai Atoms
 - **ID:** `STORY-204`
 - **User Story:**  
-  *As a user, I want a global active user selection and chaos toggle managed via lightweight Jotai atoms so that my context persists across different screens without page reloads.*
+  *As a user, I want global active user selection, chaos mode, and toast notifications managed via lightweight Jotai atoms.*
 - **Scope & Targets:**
   - `packages/shared/src/state/userAtom.ts` (`activeUserIdAtom`, `isUserSelectedAtom`)
   - `packages/shared/src/state/chaosAtom.ts` (`isChaosActiveAtom`)
@@ -115,75 +116,98 @@ Each story adheres to standard agile requirements:
 
 ---
 
-## Sprint 3: User Feature Package (`packages/users`)
-**Goal:** Deliver the complete User domain module: Zod validation schemas, data access hooks, user creation form, user detail profile, and directory components.
+## Sprint 3: .NET 8 Backend-for-Frontend Service (`services/bff`)
+**Goal:** Deliver the ASP.NET Core .NET 8 Minimal API service: endpoints for users and todos, thread-safe in-memory store, Swagger documentation, and latency/chaos middleware.
 
-### Story 3.1: User Schemas & API Client
+### Story 3.1: ASP.NET Core Project Setup & Minimal API Endpoints
 - **ID:** `STORY-301`
 - **User Story:**  
-  *As a developer, I want Zod validation schemas and typed API client methods for users so that invalid inputs are rejected client-side before sending requests.*
+  *As a frontend consumer, I want RESTful endpoints for users and todos in a lightweight .NET 8 Minimal API service so that data is served efficiently.*
 - **Scope & Targets:**
-  - `packages/users/src/schemas/userSchemas.ts`
-  - `packages/users/src/api/userApi.ts`
+  - `services/bff/bff.csproj` (.NET 8 Minimal API, Swagger)
+  - `services/bff/Program.cs`
+  - `services/bff/Endpoints/UserEndpoints.cs`
+  - `services/bff/Endpoints/TodoEndpoints.cs`
 - **Acceptance Criteria:**
-  - **Given** an input `{ username: 'ab' }`,
-  - **When** validated against `createUserSchema`,
-  - **Then** validation fails with "Username must be at least 3 characters".
-  - **Given** a valid input `{ username: 'johndoe' }`,
-  - **Then** validation succeeds and passes sanitized data to `createUserApi`.
+  - **Given** the .NET 8 service running on port 5000,
+  - **When** requesting `GET /api/users`,
+  - **Then** it returns a 200 OK JSON list of users with assigned task counts.
+  - **When** requesting `GET /api/todos?userId={id}`,
+  - **Then** it returns the todos filtered for that user.
 
-### Story 3.2: User Query Hooks (`useUsers`, `useUser`, `useCreateUser`)
+### Story 3.2: Thread-Safe In-Memory Store & Seed Data
 - **ID:** `STORY-302`
 - **User Story:**  
-  *As a frontend consumer, I want TanStack Query hooks for user operations so that caching, background refetching, and mutation states are handled out-of-the-box.*
+  *As a developer, I want a zero-configuration, thread-safe in-memory data store seeded with demo users and tasks so that the service runs without any external database.*
 - **Scope & Targets:**
+  - `services/bff/Services/InMemoryUserStore.cs`
+  - `services/bff/Services/InMemoryTodoStore.cs`
+- **Acceptance Criteria:**
+  - **Given** the service boots up,
+  - **Then** demo users (e.g. "Ada Lovelace", "Alan Turing") and their respective tasks are pre-populated.
+  - **When** new users or todos are created via POST,
+  - **Then** they are stored safely in concurrent collections.
+
+### Story 3.3: Chaos & Latency Simulation Middleware
+- **ID:** `STORY-303`
+- **User Story:**  
+  *As an evaluator, I want the backend to support artificial latency and simulated failure when requested so that optimistic rollbacks can be verified across a real HTTP boundary.*
+- **Scope & Targets:**
+  - `services/bff/Middleware/ChaosAndLatencyMiddleware.cs`
+- **Acceptance Criteria:**
+  - **Given** any HTTP request,
+  - **Then** the middleware introduces 200-400ms delay to emulate realistic network conditions.
+  - **Given** a request with header `X-Simulate-Chaos: true` (or server chaos enabled),
+  - **When** submitting `POST /api/todos`,
+  - **Then** the server responds with `500 Internal Server Error` and message `"Simulated Network Failure"`.
+
+---
+
+## Sprint 4: User Feature Package (`packages/users`)
+**Goal:** Deliver the complete User domain module: Zod validation schemas, data access hooks, user creation form, user detail profile, and directory components.
+
+### Story 4.1: User Schemas & Custom Hooks
+- **ID:** `STORY-401`
+- **User Story:**  
+  *As a developer, I want Zod validation schemas and TanStack Query hooks for users so that inputs are validated client-side and queries are cached cleanly.*
+- **Scope & Targets:**
+  - `packages/users/src/schemas/userSchemas.ts`
   - `packages/users/src/hooks/useUsers.ts`
   - `packages/users/src/hooks/useUser.ts`
   - `packages/users/src/hooks/useCreateUser.ts`
 - **Acceptance Criteria:**
-  - **Given** `useUsers()` is invoked,
-  - **Then** it queries `userKeys.lists()` and returns `{ users, isLoading, error }`.
+  - **Given** an invalid username (under 3 chars),
+  - **Then** `createUserSchema` rejects with a descriptive message.
   - **Given** `useCreateUser()` succeeds,
-  - **Then** it automatically invalidates `userKeys.lists()` so that the user directory updates immediately.
+  - **Then** `userKeys.lists()` is invalidated automatically.
 
-### Story 3.3: User Presentation & Form Components
-- **ID:** `STORY-303`
+### Story 4.2: User Presentation & Profile Components
+- **ID:** `STORY-402`
 - **User Story:**  
-  *As a user, I want a user creation form and a detailed user profile card so that I can create new users and inspect their profiles by ID.*
+  *As a user, I want a user creation form and a detailed user profile card so that I can create users and inspect their profiles.*
 - **Scope & Targets:**
   - `packages/users/src/components/UserCreateForm.tsx`
   - `packages/users/src/components/UserDetailCard.tsx`
   - `packages/users/src/components/UserList.tsx`
-  - `packages/users/src/components/UserSelector.tsx`
   - `packages/users/src/index.ts`
 - **Acceptance Criteria:**
-  - **Given** the `UserCreateForm`,
+  - **Given** `UserCreateForm`,
   - **When** submitted with empty input,
-  - **Then** an inline accessible error is displayed without triggering any network request.
+  - **Then** inline accessible error is displayed without dispatching a network call.
   - **Given** `UserDetailCard` receiving a valid user,
-  - **Then** it displays their username, ID, member since date, and an action button to view their tasks.
+  - **Then** it renders user metadata and a button to view their tasks.
 
 ---
 
-## Sprint 4: ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
+## Sprint 5: ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
 **Goal:** Implement the ToDo feature module with specific emphasis on high-fidelity optimistic creation and deterministic rollback upon simulated error.
 
-### Story 4.1: ToDo Schemas & API Client
-- **ID:** `STORY-401`
-- **User Story:**  
-  *As a developer, I want Zod validation schemas and API functions for todos so that task creation is typed and validated prior to dispatch.*
-- **Scope & Targets:**
-  - `packages/todos/src/schemas/todoSchemas.ts`
-  - `packages/todos/src/api/todoApi.ts`
-- **Acceptance Criteria:**
-  - **Given** a ToDo input missing a title or assignee ID,
-  - **Then** `createTodoSchema` rejects with descriptive validation errors.
-
-### Story 4.2: Optimistic Mutation Hook (`useCreateTodo`) with Rollback
-- **ID:** `STORY-402`
+### Story 5.1: ToDo Schemas & Optimistic Mutation Hook (`useCreateTodo`)
+- **ID:** `STORY-501`
 - **User Story:**  
   *As a user, I want newly created tasks to appear immediately in my task list before the server responds, and revert smoothly if the network request fails.*
 - **Scope & Targets:**
+  - `packages/todos/src/schemas/todoSchemas.ts`
   - `packages/todos/src/hooks/useCreateTodo.ts`
   - `packages/todos/src/hooks/useTodosByUser.ts`
 - **Acceptance Criteria:**
@@ -197,8 +221,8 @@ Each story adheres to standard agile requirements:
   - **When** `onSettled` fires,
   - **Then** `todoKeys.byUser(userId)` is invalidated to synchronize canonical server data.
 
-### Story 4.3: ToDo Presentation Components & Status Visuals
-- **ID:** `STORY-403`
+### Story 5.2: ToDo Presentation Components & Status Visuals
+- **ID:** `STORY-502`
 - **User Story:**  
   *As a user, I want a responsive ToDo creation form and task list that clearly displays optimistic status badges and empty states.*
 - **Scope & Targets:**
@@ -214,98 +238,52 @@ Each story adheres to standard agile requirements:
 
 ---
 
-## Sprint 5: Shippable Web Application & TanStack Router (`apps/web`)
+## Sprint 6: Shippable Web App Shell & TanStack Router (`apps/web`)
 **Goal:** Build the deliverable web application, compose features into pages, and configure type-safe TanStack Router routing with search params.
 
-### Story 5.1: TanStack Router Route Tree & Layout Shell
-- **ID:** `STORY-501`
+### Story 6.1: TanStack Router Route Tree & Layout Shell
+- **ID:** `STORY-601`
 - **User Story:**  
-  *As a user, I want a clean application layout with header navigation, route transitions, and responsive page containers.*
+  *As a user, I want a clean application layout with header navigation, active user switcher, chaos toggle, and backend status indicator.*
 - **Scope & Targets:**
   - `apps/web/src/routes/__root.tsx`
   - `apps/web/src/routes/index.tsx`
-  - `apps/web/src/router.ts`
+  - `apps/web/src/components/Header.tsx`
+  - `apps/web/src/components/ChaosToggle.tsx`
+  - `apps/web/src/components/BackendStatusBadge.tsx`
   - `apps/web/src/main.tsx`
 - **Acceptance Criteria:**
   - **Given** the app launches,
-  - **Then** the header displays navigation links (`Dashboard`, `Users`, `Todos`), the global user switcher, and the chaos simulation toggle.
-  - **Given** navigation between links,
-  - **Then** TanStack Router swaps active route views without full-page reloads.
+  - **Then** the header displays navigation links (`Dashboard`, `Users`, `Todos`), the global user switcher, backend status (BFF vs Mock), and the chaos simulation toggle.
 
-### Story 5.2: Users Routes (`/users` and `/users/:id`)
-- **ID:** `STORY-502`
+### Story 6.2: Users Routes & ToDos Route Composition
+- **ID:** `STORY-602`
 - **User Story:**  
-  *As a user, I want to navigate to `/users` to create/browse users, and navigate to `/users/:id` to inspect an individual user's profile and tasks.*
+  *As a user, I want to navigate to `/users`, `/users/:id`, and `/todos` seamlessly.*
 - **Scope & Targets:**
   - `apps/web/src/routes/users/index.tsx`
   - `apps/web/src/routes/users/$id.tsx`
-- **Acceptance Criteria:**
-  - **Given** a user navigates to `/users/user-1`,
-  - **Then** the `$id` parameter is extracted in a type-safe manner and passed to the user detail container.
-  - **Given** an invalid or non-existent user ID,
-  - **Then** a graceful "User not found" view is displayed with a link back to `/users`.
-
-### Story 5.3: ToDos Route (`/todos`) with Filtering & Composition
-- **ID:** `STORY-503`
-- **User Story:**  
-  *As a user, I want to navigate to `/todos` to view and create tasks, with the option to filter by specific user or view tasks for the globally active user.*
-- **Scope & Targets:**
   - `apps/web/src/routes/todos.tsx`
 - **Acceptance Criteria:**
-  - **Given** the `/todos` page,
-  - **When** an active user is selected in the global header,
-  - **Then** the task list filters to that user's tasks, and the creation form pre-selects that user as assignee.
-  - **Given** search param `?userId=user-2` in the URL,
-  - **Then** TanStack Router validates the search param and synchronizes the view.
+  - **Given** a user navigates to `/users/user-1`,
+  - **Then** the `$id` parameter is extracted type-safely and renders the user detail profile.
+  - **Given** `/todos?userId=user-2`,
+  - **Then** TanStack Router validates search params and filters tasks for that user.
 
 ---
 
-## Sprint 6: Cross-Cutting Jotai Integration, Resilience & Polish
-**Goal:** Verify interactive chaos testing, smooth notification feedback, keyboard accessibility audits, and performance tuning.
-
-### Story 6.1: Interactive Chaos Mode Toolbar & Rollback Verification
-- **ID:** `STORY-601`
-- **User Story:**  
-  *As an evaluator, I want a toggle switch in the UI header to turn on "Simulate Network Failure" so that I can immediately verify optimistic rollback in real-time.*
-- **Scope & Targets:**
-  - `apps/web/src/components/ChaosToggle.tsx`
-  - Integration with `packages/shared` chaos engine
-- **Acceptance Criteria:**
-  - **Given** Chaos Mode is toggled ON,
-  - **When** the user creates a new ToDo item,
-  - **Then** the item appears in the list immediately (optimistic update),
-  - **And** after the artificial delay (e.g. 400ms), the item disappears from the list (rollback),
-  - **And** a clear error toast appears explaining that the operation failed and was reverted.
-
-### Story 6.2: Accessibility (a11y) & Keyboard Audit
-- **ID:** `STORY-602`
-- **User Story:**  
-  *As a keyboard or screen-reader user, I want to navigate the entire app and perform all operations without a mouse.*
-- **Scope & Targets:**
-  - Focus indicators across all buttons, inputs, links
-  - Skip to main content link
-  - Screen reader announcements on mutations
-- **Acceptance Criteria:**
-  - **Given** only a keyboard (`Tab`, `Shift+Tab`, `Enter`, `Space`),
-  - **When** navigating from home to user creation, to task creation,
-  - **Then** all inputs and buttons receive visible focus rings and can be activated via keyboard.
-  - **Then** automated axe-core audit reports zero critical or serious accessibility violations.
-
----
-
-## Sprint 7: Documentation, Reflections & AI Journey
+## Sprint 7: Production Reflections, AI Journey & README Documentation
 **Goal:** Deliver the required architectural README, performance & testing reflections, and comprehensive AI journey documentation.
 
 ### Story 7.1: Architectural README & Handover Documentation
 - **ID:** `STORY-701`
 - **User Story:**  
-  *As an evaluating engineering manager or peer frontend team, I want a concise README explaining architectural trade-offs, package boundaries, and local setup instructions.*
+  *As an evaluating engineering manager, I want a concise README explaining architectural trade-offs, package boundaries, BFF integration, and local setup instructions.*
 - **Scope & Targets:**
   - `README.md` (root)
 - **Acceptance Criteria:**
   - **Given** `README.md`,
-  - **Then** it clearly explains why the monorepo was split into `web`, `users`, `todos`, and `shared`.
-  - **Then** it provides quick-start commands: install (`pnpm install`), dev (`pnpm dev`), build (`pnpm build`).
+  - **Then** it clearly explains the monorepo splits, `services/bff` placement, dual-mode fallback, and execution commands (`pnpm dev` for mock mode, `pnpm dev:full` for full-stack).
 
 ### Story 7.2: Performance & Testing Reflections
 - **ID:** `STORY-702`
@@ -317,7 +295,7 @@ Each story adheres to standard agile requirements:
   - **Given** the performance reflection,
   - **Then** it covers query caching (`staleTime`/`gcTime`), re-render isolation via Jotai, and route code-splitting via TanStack Router.
   - **Given** the testing reflection,
-  - **Then** it outlines the 4-layer testing pyramid, mocking approach, and the step-by-step verification of optimistic rollbacks.
+  - **Then** it outlines the 4-layer testing pyramid and the step-by-step verification of optimistic rollbacks.
 
 ### Story 7.3: AI Journey Artifacts (`ai-journey/`)
 - **ID:** `STORY-703`

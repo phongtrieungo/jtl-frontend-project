@@ -37,6 +37,10 @@ For ToDo creation (`useCreateTodo`), the agent must strictly preserve:
 - Input elements must be tied to labels via `htmlFor`/`id` and error messages via `aria-describedby` and `aria-invalid`.
 - All interactive controls must render a distinct focus ring on keyboard navigation.
 
+### Rule 5: Dual-Mode API Adapter & Evaluator Independence
+- The frontend must never strictly require `services/bff` to be running. If the .NET service is offline or uninstalled, the application must seamlessly fall back to the in-browser mock engine.
+- All HTTP communication with `services/bff` (.NET 8 Minimal API) is mediated through `packages/shared`.
+
 ---
 
 ## 3. Working Procedure for Subsequent Prompts & Sprints

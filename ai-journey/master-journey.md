@@ -35,6 +35,12 @@ This document records how AI was utilized to architect, plan, and build this sol
    - Embedded `AGENTS.md` and `GEMINI.md` at repository root so that future prompts automatically inherit the full system context, rules, and sprint plan without context drift.
 5. **GitHub Remote Connection & Initial Baseline:**
    - Initialized Git tracking, connected to `https://github.com/phongtrieungo/jtl-frontend-project.git`, configured `.gitignore`, and pushed the foundational specifications and skills directly to `origin/main`.
+6. **Architectural Alignment (.NET 8 BFF & Dual-Mode Resilience):**
+   - *User Decisions:*
+     - Selected **.NET 8** (LTS) for the backend service.
+     - Confirmed the **Dual-Mode Adapter** architecture: frontend connects to .NET 8 BFF when available, but automatically falls back to the in-browser mock engine if the backend service is absent or uninstalled by the reviewer.
+     - Placed the service in `services/bff` to clearly distinguish standalone backend services from shippable web apps (`apps/web`).
+     - Selected **Slate + Indigo** palette for clean SaaS visual hierarchy.
 
 ---
 
@@ -42,11 +48,11 @@ This document records how AI was utilized to architect, plan, and build this sol
 
 | Sprint | Story / Topic | Key AI Prompts / Tools | Output Evaluation & Overrides | Status |
 | :--- | :--- | :--- | :--- | :--- |
-| **Sprint 0** | PRD, Architecture, Skills & Sprint Plan | `write_to_file`, Markdown generation | Enforced strict Gherkin acceptance criteria and zero sideways dependencies. | **Done** |
+| **Sprint 0** | PRD, Architecture, Skills & Sprint Plan | `write_to_file`, Markdown generation | Integrated .NET 8 BFF, dual-mode fallback, and Slate + Indigo theme. | **Done** |
 | **Sprint 1** | Monorepo & Tooling Setup | Pending | | Planned |
-| **Sprint 2** | Shared Package & In-Memory Engine | Pending | | Planned |
-| **Sprint 3** | User Feature Module | Pending | | Planned |
-| **Sprint 4** | ToDo Feature Module (Optimistic UI) | Pending | | Planned |
-| **Sprint 5** | Shippable App & TanStack Router | Pending | | Planned |
-| **Sprint 6** | Jotai Cross-Cutting & Chaos Mode | Pending | | Planned |
-| **Sprint 7** | Final README, Reflections & Review | Pending | | Planned |
+| **Sprint 2** | Shared Core & Dual-Mode Client | Pending | | Planned |
+| **Sprint 3** | .NET 8 BFF Service (`services/bff`) | Pending | | Planned |
+| **Sprint 4** | User Feature Module (`packages/users`) | Pending | | Planned |
+| **Sprint 5** | ToDo Feature Module (`packages/todos`) | Pending | | Planned |
+| **Sprint 6** | Shippable Web App Shell (`apps/web`) | Pending | | Planned |
+| **Sprint 7** | Reflections, AI Journey & README | Pending | | Planned |
