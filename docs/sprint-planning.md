@@ -1,7 +1,7 @@
 # Sprint Planning & Engineering Execution Roadmap
 
 ## Executive Overview
-This document establishes the comprehensive development plan for the **User & ToDo Monorepo Platform**. Structured across 7 focused sprints, this plan guides implementation from repository foundation through feature packages, .NET 8 BFF service, optimistic mutation resilience, routing composition, and final documentation deliverables.
+This document establishes the comprehensive development plan for the **User & ToDo Monorepo Platform**. Structured across 7 focused sprints, this plan guides implementation from repository foundation through feature packages, .NET 10 BFF service, optimistic mutation resilience, routing composition, and final documentation deliverables.
 
 Each story adheres to standard agile requirements:
 - **User Story Statement** (`As a... I want... So that...`)
@@ -69,7 +69,7 @@ Each story adheres to standard agile requirements:
 ### Story 2.2: Dual-Mode API Client & In-Browser Mock Engine
 - **ID:** `STORY-202`
 - **User Story:**  
-  *As an evaluator or tester, I want a dual-mode API client that connects to the .NET 8 BFF when available and automatically falls back to an in-browser mock engine if the backend is absent.*
+  *As an evaluator or tester, I want a dual-mode API client that connects to the .NET 10 BFF when available and automatically falls back to an in-browser mock engine if the backend is absent.*
 - **Scope & Targets:**
   - `packages/shared/src/api/apiClient.ts`
   - `packages/shared/src/api/mockDb.ts`
@@ -116,20 +116,20 @@ Each story adheres to standard agile requirements:
 
 ---
 
-## Sprint 3: .NET 8 Backend-for-Frontend Service (`services/bff`)
-**Goal:** Deliver the ASP.NET Core .NET 8 Minimal API service: endpoints for users and todos, thread-safe in-memory store, Swagger documentation, and latency/chaos middleware.
+## Sprint 3: .NET 10 Backend-for-Frontend Service (`services/bff`)
+**Goal:** Deliver the ASP.NET Core .NET 10 Minimal API service: endpoints for users and todos, thread-safe in-memory store, Swagger documentation, and latency/chaos middleware.
 
 ### Story 3.1: ASP.NET Core Project Setup & Minimal API Endpoints
 - **ID:** `STORY-301`
 - **User Story:**  
-  *As a frontend consumer, I want RESTful endpoints for users and todos in a lightweight .NET 8 Minimal API service so that data is served efficiently.*
+  *As a frontend consumer, I want RESTful endpoints for users and todos in a lightweight .NET 10 Minimal API service so that data is served efficiently.*
 - **Scope & Targets:**
-  - `services/bff/bff.csproj` (.NET 8 Minimal API, Swagger)
+  - `services/bff/bff.csproj` (.NET 10 Minimal API, Swagger)
   - `services/bff/Program.cs`
   - `services/bff/Endpoints/UserEndpoints.cs`
   - `services/bff/Endpoints/TodoEndpoints.cs`
 - **Acceptance Criteria:**
-  - **Given** the .NET 8 service running on port 5000,
+  - **Given** the .NET 10 service running on port 5000,
   - **When** requesting `GET /api/users`,
   - **Then** it returns a 200 OK JSON list of users with assigned task counts.
   - **When** requesting `GET /api/todos?userId={id}`,

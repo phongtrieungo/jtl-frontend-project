@@ -35,7 +35,7 @@ export interface ApiClient {
 
 /**
  * DualModeApiClient provides seamless, resilient switching between
- * the ASP.NET Core .NET 8 BFF and the in-browser mock database engine.
+ * the ASP.NET Core .NET 10 BFF and the in-browser mock database engine.
  */
 export class DualModeApiClient implements ApiClient {
   private modePreference: ApiClientMode;

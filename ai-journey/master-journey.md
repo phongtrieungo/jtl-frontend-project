@@ -136,4 +136,7 @@ This document records how AI was utilized to architect, plan, and build this sol
 | **Sprint 6** | Shippable Web App Shell (`apps/web`) | Pending | | Planned |
 | **Sprint 7** | Reflections, AI Journey & README | Pending | | Planned |
 
+## Developer Override — .NET 10 Standard (2026-09-24)
+
+The original planning entries above record the initial .NET 8 choice. The developer has since confirmed that this repository will use .NET 10. Current implementation and specifications target `net10.0`, including ASP.NET Core OpenAPI and `Microsoft.AspNetCore.Mvc.Testing` 10.0.0. Current setup and architecture guidance use .NET 10; the earlier .NET 8 entries are retained as historical planning context.
 

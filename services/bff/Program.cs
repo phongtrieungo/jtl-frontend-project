@@ -33,7 +33,7 @@ builder.Services.AddSwaggerGen(c =>
     {
         Title = "User & ToDo BFF",
         Version = "v1",
-        Description = "Backend-for-Frontend Minimal API (ASP.NET Core .NET 8) — in-memory store with chaos simulation middleware."
+        Description = "Backend-for-Frontend Minimal API (ASP.NET Core .NET 10) — in-memory store with chaos simulation middleware."
     });
 });
 

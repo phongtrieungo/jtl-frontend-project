@@ -3,7 +3,7 @@
 ## Project: Monorepo User & ToDo Management Platform
 **Role Target:** Senior Frontend Software Engineer  
 **Evaluation Focus:** Architectural reasoning, strict module boundaries, data and UX resilience, optimistic mutations, state discipline, and deliberate AI usage.  
-**Tech Stack:** React, TypeScript, Vite, Turborepo, TanStack Router, TanStack Query, Jotai, TailwindCSS, Zod, and ASP.NET Core (.NET 8) Minimal API.
+**Tech Stack:** React, TypeScript, Vite, Turborepo, TanStack Router, TanStack Query, Jotai, TailwindCSS, Zod, and ASP.NET Core (.NET 10) Minimal API.
 
 ---
 
@@ -13,12 +13,12 @@ The objective of this project is to build a robust, scalable, and modular fronte
 1. **User Management:** Creating users, viewing a user directory, and inspecting individual user profiles.
 2. **ToDo Management:** Creating tasks assigned to specific users and viewing user-specific task lists with immediate optimistic feedback.
 
-Rather than building a monolithic frontend application, the solution demonstrates production-grade structural separation through a **Turborepo monorepo** where business logic, data access, and presentation are decoupled into independent feature modules (`packages/users`, `packages/todos`) coordinated by a shared infrastructure core (`packages/shared`), composed into a shippable application (`apps/web`), and supported by a dedicated **Backend-for-Frontend (BFF) service** (`services/bff`) built with **ASP.NET Core (.NET 8) Minimal API**.
+Rather than building a monolithic frontend application, the solution demonstrates production-grade structural separation through a **Turborepo monorepo** where business logic, data access, and presentation are decoupled into independent feature modules (`packages/users`, `packages/todos`) coordinated by a shared infrastructure core (`packages/shared`), composed into a shippable application (`apps/web`), and supported by a dedicated **Backend-for-Frontend (BFF) service** (`services/bff`) built with **ASP.NET Core (.NET 10) Minimal API**.
 
 ### Evaluator-First Dual-Mode Resilience
 To provide senior-level architectural fidelity while respecting the take-home evaluation environment (where evaluators may or may not have the .NET SDK installed):
 - The frontend features a **Dual-Mode API Adapter**:
-  - **`bff` mode:** Connects to `services/bff` (ASP.NET Core .NET 8 Minimal API at `http://localhost:5000`).
+  - **`bff` mode:** Connects to `services/bff` (ASP.NET Core .NET 10 Minimal API at `http://localhost:5000`).
   - **`mock` mode (Automatic Fallback):** If the .NET service is offline or uninstalled, the application automatically falls back to an in-browser typed in-memory engine with identical latency and chaos mechanics. Evaluators can run the full frontend with zero extra toolchain installation!
 
 A primary highlight of this system is **Data and UX Resilience**: implementing high-fidelity optimistic updates for task creation with deterministic rollback on simulated network failure, verified through an interactive chaos simulation toggle both in the frontend UI and the .NET BFF middleware.
@@ -37,7 +37,7 @@ A primary highlight of this system is **Data and UX Resilience**: implementing h
 - **Data Inconsistency on Failures:** Optimistic updates can lead to ghost data if network requests fail. Solved via query snapshotting and deterministic rollback in `onError`.
 - **Architectural Spaghetti:** Features importing each other arbitrarily. Solved via Turborepo package boundaries with zero sideways dependencies.
 - **State Fragmentation:** Complex global stores used as dumping grounds. Solved via scoped server cache (TanStack Query) and surgical atomic client state (Jotai).
-- **Backend Coupling:** Direct coupling between frontend and backend. Solved via a lightweight .NET 8 BFF aggregating tailored endpoints, combined with an automatic in-memory fallback.
+- **Backend Coupling:** Direct coupling between frontend and backend. Solved via a lightweight .NET 10 BFF aggregating tailored endpoints, combined with an automatic in-memory fallback.
 
 ---
 
@@ -90,8 +90,8 @@ A primary highlight of this system is **Data and UX Resilience**: implementing h
 - **F3.3: Network Chaos Mode Atom**
   - Atom storing `isChaosEnabled: boolean` controlling API mock/BFF failure rates (`X-Simulate-Chaos` header).
 
-### 3.4 Backend for Frontend (BFF) Service (`services/bff` - .NET 8 Minimal API)
-- **F4.1: ASP.NET Core .NET 8 Minimal API**
+### 3.4 Backend for Frontend (BFF) Service (`services/bff` - .NET 10 Minimal API)
+- **F4.1: ASP.NET Core .NET 10 Minimal API**
   - Lightweight, high-performance service running on `http://localhost:5000`.
   - Endpoints:
     - `GET /api/users`: Returns list of users with assigned task counts.
@@ -159,7 +159,7 @@ A primary highlight of this system is **Data and UX Resilience**: implementing h
 1. **Working Monorepo Source Code:**
    - Turborepo configuration (`turbo.json`, `package.json`, `pnpm-workspace.yaml`).
    - `apps/web`: React + Vite + TanStack Router application.
-   - `services/bff`: ASP.NET Core (.NET 8) Minimal API service.
+   - `services/bff`: ASP.NET Core (.NET 10) Minimal API service.
    - `packages/users`: Feature package for users.
    - `packages/todos`: Feature package for todos with optimistic update.
    - `packages/shared`: Shared types, UI components, dual-mode API client, mock database, Jotai atoms.

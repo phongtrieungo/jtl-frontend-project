@@ -14,7 +14,7 @@ export interface HttpBffClientOptions {
 }
 
 /**
- * HTTP Client targeting the ASP.NET Core .NET 8 Minimal API BFF.
+ * HTTP Client targeting the ASP.NET Core .NET 10 Minimal API BFF.
  */
 export class HttpBffClient {
   private baseUrl: string;

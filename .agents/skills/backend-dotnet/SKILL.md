@@ -1,9 +1,9 @@
 ---
 name: backend-dotnet
-description: Architectural standards, coding patterns, thread-safe in-memory stores, chaos/latency middleware, CORS, OpenAPI/Swagger, and testing recipes for the ASP.NET Core .NET 8 Minimal API BFF in services/bff.
+description: Architectural standards, coding patterns, thread-safe in-memory stores, chaos/latency middleware, CORS, OpenAPI/Swagger, and testing recipes for the ASP.NET Core .NET 10 Minimal API BFF in services/bff.
 ---
 
-# Backend .NET 8 Minimal API Guidelines & Architecture
+# Backend .NET 10 Minimal API Guidelines & Architecture
 
 This skill defines the architectural standards, coding conventions, middleware patterns, and testing strategies for the **Backend-for-Frontend (BFF)** service located in `services/bff`.
 
@@ -11,7 +11,7 @@ This skill defines the architectural standards, coding conventions, middleware p
 
 ## 1. Architectural Philosophy & Boundaries
 
-The BFF is built as a lightweight, high-performance **ASP.NET Core .NET 8 Minimal API** service. Its primary purpose is to aggregate, shape, and serve data specifically tailored to the frontend's needs while keeping infrastructure requirements minimal.
+The BFF is built as a lightweight, high-performance **ASP.NET Core .NET 10 Minimal API** service. Its primary purpose is to aggregate, shape, and serve data specifically tailored to the frontend's needs while keeping infrastructure requirements minimal.
 
 ### Boundary Rules
 1. **Zero Frontend Coupling:** The .NET BFF service does not reference, import, or bundle any JavaScript/TypeScript modules or Node artifacts.
@@ -41,7 +41,7 @@ services/bff/
 │   └── ChaosService.cs        # Chaos state coordinator
 ├── Program.cs                 # Service bootstrap, DI, CORS, Swagger
 ├── appsettings.json
-└── bff.csproj                 # TargetFramework: net8.0
+└── bff.csproj                 # TargetFramework: net10.0
 ```
 
 ### 2.1 Route Mapping via Endpoint Groups

@@ -2,7 +2,7 @@
 
 ## 1. Monorepo Topology & Boundaries
 
-The codebase is organized as a lightweight Turborepo monorepo accommodating the frontend application, domain feature packages, shared core library, and a dedicated **Backend-for-Frontend (BFF)** service in .NET 8.
+The codebase is organized as a lightweight Turborepo monorepo accommodating the frontend application, domain feature packages, shared core library, and a dedicated **Backend-for-Frontend (BFF)** service in .NET 10.
 
 ```
                               ┌────────────────┐
@@ -33,7 +33,7 @@ The codebase is organized as a lightweight Turborepo monorepo accommodating the 
                      ▼                                 ▼
          ┌───────────────────────┐         ┌───────────────────────┐
          │     services/bff      │         │  In-Browser Mock DB   │
-         │  (ASP.NET Core .NET 8 │         │   (Zero-Dependency    │
+         │  (ASP.NET Core .NET 10 │         │   (Zero-Dependency    │
          │     Minimal API)      │         │   Reviewer Fallback)  │
          └───────────────────────┘         └───────────────────────┘
 ```
@@ -43,7 +43,7 @@ The codebase is organized as a lightweight Turborepo monorepo accommodating the 
 | Path | Type | Responsibilities | Dependencies |
 | :--- | :--- | :--- | :--- |
 | **`apps/web`** | Web Application | Route definitions (TanStack Router), page layouts, feature composition, global providers, asset bundling. | `packages/users`, `packages/todos`, `packages/shared` |
-| **`services/bff`** | Backend Service | ASP.NET Core (.NET 8) Minimal API, REST endpoints, in-memory concurrent data store, chaos/latency middleware, OpenAPI/Swagger. | .NET 8 runtime / ASP.NET Core |
+| **`services/bff`** | Backend Service | ASP.NET Core (.NET 10) Minimal API, REST endpoints, in-memory concurrent data store, chaos/latency middleware, OpenAPI/Swagger. | .NET 10 runtime / ASP.NET Core |
 | **`packages/users`** | Feature Module | User domain types, API hooks (`useUsers`, `useUser`, `useCreateUser`), user components (`UserCreateForm`, `UserDetailCard`, `UserList`). | `packages/shared` |
 | **`packages/todos`** | Feature Module | Todo domain types, optimistic mutation hooks (`useCreateTodo`), todo components (`TodoCreateForm`, `TodoList`, `TodoItemRow`). | `packages/shared` |
 | **`packages/shared`** | Core Library | Domain types, UI primitives (Button, Input, Alert, Card, Spinner), Dual-Mode API Client, in-memory mock engine, Jotai atoms, query client setup. | External libraries only |
@@ -57,9 +57,9 @@ The codebase is organized as a lightweight Turborepo monorepo accommodating the 
 
 ---
 
-## 2. Backend for Frontend (BFF) Architecture (.NET 8)
+## 2. Backend for Frontend (BFF) Architecture (.NET 10)
 
-The BFF service resides in `services/bff` and is built using **ASP.NET Core 8.0 Minimal APIs**.
+The BFF service resides in `services/bff` and is built using **ASP.NET Core 10.0 Minimal APIs**.
 
 ### 2.1 BFF Directory Blueprint
 ```
@@ -81,7 +81,7 @@ services/bff/
 │   └── ChaosService.cs        # Global chaos mode state coordinator
 ├── Program.cs                 # Minimal API entrypoint, CORS & Swagger setup
 ├── appsettings.json
-└── bff.csproj                 # TargetFramework: net8.0
+└── bff.csproj                 # TargetFramework: net10.0
 ```
 
 ### 2.2 In-Memory Thread-Safe Data Layer
@@ -98,7 +98,7 @@ To test optimistic rollbacks across the real network boundary:
 
 ## 3. Evaluator-First Dual-Mode API Architecture
 
-To ensure any evaluator can run the application seamlessly—even if they do not have the .NET 8 SDK installed—the data layer implements a **Dual-Mode Adapter**:
+To ensure any evaluator can run the application seamlessly—even if they do not have the .NET 10 SDK installed—the data layer implements a **Dual-Mode Adapter**:
 
 ```typescript
 // packages/shared/src/api/apiClient.ts
@@ -121,13 +121,13 @@ export interface ApiClient {
    - If configured for `bff` but `http://localhost:5000/api/health` fails to respond, the client automatically switches to the in-browser mock engine and triggers an informational toast: *"BFF offline — running in in-browser mock mode"*.
 3. **Execution Commands:**
    - `pnpm dev`: Runs the frontend with in-browser mock (zero prerequisite setup).
-   - `pnpm dev:full`: Runs both the Vite frontend and .NET 8 BFF concurrently via Turborepo.
+   - `pnpm dev:full`: Runs both the Vite frontend and .NET 10 BFF concurrently via Turborepo.
 
 ---
 
 ## 4. Optimistic Mutation & Rollback Sequence
 
-The following diagram illustrates the complete optimistic update lifecycle using the .NET 8 BFF with chaos injection:
+The following diagram illustrates the complete optimistic update lifecycle using the .NET 10 BFF with chaos injection:
 
 ```mermaid
 sequenceDiagram
@@ -219,7 +219,7 @@ Located in `apps/web/src/routes`:
 
 | Decision | Alternative Considered | Chosen Approach | Trade-off / Justification |
 | :--- | :--- | :--- | :--- |
-| **BFF Framework** | Node.js Express / NestJS | **ASP.NET Core (.NET 8) Minimal API** | Clean, fast, lightweight HTTP service with built-in dependency injection and Swagger, cleanly isolating backend logic. |
+| **BFF Framework** | Node.js Express / NestJS | **ASP.NET Core (.NET 10) Minimal API** | Clean, fast, lightweight HTTP service with built-in dependency injection and Swagger, cleanly isolating backend logic. |
 | **BFF Location** | `apps/bff` | **`services/bff`** | Clear conceptual distinction: `apps/` is reserved for shippable web client applications; `services/` contains backend services. |
 | **Reviewer Resilience** | Require .NET SDK | **Dual-Mode Adapter with Auto-Fallback** | Evaluators without .NET installed can run `pnpm dev` immediately using the in-browser mock engine; evaluators with .NET can run full-stack `pnpm dev:full`. |
 | **BFF Storage** | SQLite / EF Core | **In-Memory `ConcurrentDictionary`** | Eliminates database migration steps, file permission errors, and external database dependencies while remaining thread-safe. |
