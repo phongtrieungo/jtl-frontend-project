@@ -8,13 +8,15 @@
 ## 1. Quick Overview & Tech Stack
 
 - **Monorepo Engine:** [Turborepo](https://turbo.build/repo) + [pnpm](https://pnpm.io/) workspaces
-- **Web Application (`apps/web`):** React 18 / 19, TypeScript, Vite, [TanStack Router](https://tanstack.com/router)
-- **Backend Service (`services/bff`):** ASP.NET Core (.NET 8) Minimal API with in-memory thread-safe store and latency/chaos middleware
+- **Web Application (`apps/web`):** React 18, TypeScript, Vite, [TanStack Router](https://tanstack.com/router)
+- **Shared Core Library (`packages/shared`):** Centralized domain types, query key factories, Dual-Mode API client, in-browser mock engine, Jotai atoms, accessible UI kit primitives
+- **Backend Service (`services/bff`):** ASP.NET Core (.NET 8) Minimal API with thread-safe in-memory store and latency/chaos simulation middleware
 - **Data Fetching & Caching:** [TanStack Query v5](https://tanstack.com/query) with hierarchical query key factories
-- **State Management:** [Jotai](https://jotai.org/) for atomic cross-cutting UI state (`activeUserIdAtom`, `isChaosModeAtom`, `toastsAtom`)
+- **State Management:** [Jotai](https://jotai.org/) for atomic cross-cutting UI state (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`)
 - **Styling & Tokens:** TailwindCSS (Slate + Indigo palette)
 - **Form Validation:** Zod with accessible inline error binding
-- **Accessibility:** WCAG 2.1 AA compliant, semantic HTML, visible focus states, ARIA contracts
+- **Accessibility:** WCAG 2.1 AA compliant, semantic HTML, visible keyboard focus rings, ARIA contracts
+- **Testing:** Vitest, React Testing Library, and jsdom
 
 ---
 
@@ -55,13 +57,66 @@
 ```
 
 ### Boundary Guarantees:
-- **`packages/users` and `packages/todos` never import each other directly.** All shared domain contracts, cross-cutting state atoms, and UI primitives flow through `packages/shared`.
-- **`services/bff` is a standalone .NET 8 service.** Frontend interaction is mediated strictly over HTTP REST contracts defined in `packages/shared`.
+- **Zero Sideways Imports (Rule 1):** `packages/users` and `packages/todos` never import each other directly. All shared domain contracts, cross-cutting state atoms, and UI primitives flow through `packages/shared`.
+- **Decoupled Backend Service (Rule 5):** `services/bff` is a standalone .NET 8 service. Frontend interaction is mediated strictly over HTTP REST contracts defined in `packages/shared`.
 - **Evaluator-First Dual-Mode Adapter:** Evaluators without the .NET SDK installed can run the complete frontend immediately with the in-browser mock engine (`pnpm dev`). Evaluators with .NET 8 can run the full-stack experience (`pnpm dev:full`).
 
 ---
 
-## 3. Core Architectural Highlights
+## 3. Package & Service Directory Breakdown
+
+| Path | Type | Status | Responsibilities |
+| :--- | :--- | :--- | :--- |
+| **`packages/shared`** | Core Library | **Ready (Sprint 2)** | Domain types, query keys (`userKeys`, `todoKeys`), Dual-Mode API Client, In-Browser Mock DB, Jotai atoms (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`), UI primitives (`Button`, `Input`, `Card`, `Badge`, `Alert`, `Spinner`, `ToastViewport`). |
+| **`services/bff`** | Backend Service | **Ready for Sprint 3** | ASP.NET Core (.NET 8) Minimal API, REST endpoints (`/api/users`, `/api/todos`), concurrent collections in-memory store, Swagger/OpenAPI, and latency/chaos middleware. |
+| **`packages/users`** | Feature Module | *Scheduled (Sprint 4)* | User schemas, TanStack Query hooks (`useUsers`, `useUser`, `useCreateUser`), user forms, profiles, and directory components. |
+| **`packages/todos`** | Feature Module | *Scheduled (Sprint 5)* | ToDo schemas, optimistic mutation engine (`useCreateTodo`), task list, task rows, and status indicators. |
+| **`apps/web`** | Web Application | *Scheduled (Sprint 6)* | TanStack Router file-based route tree, layout shell, active user switcher, chaos toggle, and backend status indicator. |
+
+---
+
+## 4. Getting Started & Local Development
+
+### Prerequisites
+- **Node.js:** `>= 18.0.0` (Tested on `v22.x`)
+- **Package Manager:** `pnpm >= 9.x`
+- **.NET SDK (Optional for Mock Mode):** `.NET 8.0 SDK` (only needed for `services/bff`)
+
+### Installation
+```bash
+git clone https://github.com/phongtrieungo/jtl-frontend-project.git
+cd jtl-frontend-project
+pnpm install
+```
+
+### Verification & Testing
+```bash
+# Run typechecking across all packages
+pnpm typecheck
+
+# Run test suites across all packages
+pnpm test
+
+# Run build across all packages in topological order
+pnpm build
+
+# Run linter
+pnpm lint
+```
+
+### Running the Application
+
+```bash
+# Mode 1: Zero-Dependency In-Browser Mock Engine (No .NET required)
+pnpm dev
+
+# Mode 2: Full-Stack with .NET 8 Minimal API BFF
+pnpm dev:full
+```
+
+---
+
+## 5. Core Architectural Highlights
 
 1. **Optimistic Mutations with Verifiable Rollback:**
    - When creating a task, `useCreateTodo` injects the item into TanStack Query's cache immediately with an amber `Saving...` pulse badge.
@@ -71,10 +126,12 @@
    - A dedicated UI toggle in the application header allows evaluators to simulate network/server 500 errors on demand to verify rollback behavior without proxy tools.
 3. **Atomic Cross-Cutting State via Jotai:**
    - `activeUserIdAtom` stores the selected user and synchronizes context across the header, user directory, and task forms without prop drilling or heavy context providers.
+4. **Dual-Mode Adapter with Auto-Fallback:**
+   - `DualModeApiClient` connects to the ASP.NET Core .NET 8 BFF when available, but automatically catches network disconnections and transparently falls back to the in-browser mock engine so that evaluators never experience broken views.
 
 ---
 
-## 4. Documentation & Specifications Index
+## 6. Documentation & Specifications Index
 
 All project specifications, agent directives, and development roadmaps are tracked under version control:
 
@@ -92,11 +149,11 @@ All project specifications, agent directives, and development roadmaps are track
 
 ---
 
-## 5. Development Roadmap (7 Sprints)
+## 7. Development Roadmap (7 Sprints)
 
 - [x] **Sprint 0:** Product Requirements, Architecture, Skills & Sprint Planning Baseline
-- [ ] **Sprint 1:** Monorepo Foundation & Tooling Setup (`turbo.json`, `pnpm-workspace.yaml`, configs)
-- [ ] **Sprint 2:** Core Domain, Dual-Mode API Adapter & Shared UI Kit (`packages/shared`)
+- [x] **Sprint 1:** Monorepo Foundation & Tooling Setup (`turbo.json`, `pnpm-workspace.yaml`, configs)
+- [x] **Sprint 2:** Core Domain, Dual-Mode API Adapter & Shared UI Kit (`packages/shared`)
 - [ ] **Sprint 3:** .NET 8 Backend-for-Frontend Service (`services/bff`)
 - [ ] **Sprint 4:** User Feature Package (`packages/users`)
 - [ ] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
