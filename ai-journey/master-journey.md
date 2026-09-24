@@ -97,14 +97,40 @@ This document records how AI was utilized to architect, plan, and build this sol
 
 ---
 
-## 5. Sprint Execution Tracking Log
+## 5. Interaction Log: Phase 3 — Sprint 3 (.NET BFF Service)
+
+### 5.1 Prompt & Intent
+- **User Prompt:** "Continue"
+- **Engineer Objective:** Implement the full `services/bff` ASP.NET Core .NET 10 Minimal API, covering all CRUD endpoints, chaos/latency middleware, and an integration test suite using `WebApplicationFactory<Program>`.
+
+### 5.2 Implemented Components & Stories
+1. **Models:** `UserDto`, `TodoDto`, `Requests.cs` (CreateUser, CreateTodo, UpdateTodo, SetChaos).
+2. **Services:**
+   - `IChaosService` + `ChaosService` — thread-safe volatile bool for chaos toggle.
+   - `ITodoStore` + `InMemoryTodoStore` — `ConcurrentDictionary`-backed store seeded with 6 demo todos matching the mock DB.
+   - `IUserStore` + `InMemoryUserStore` — `ConcurrentDictionary`-backed store seeded with 3 demo users; live task counts computed via `ITodoStore`.
+3. **Middleware:** `ChaosAndLatencyMiddleware` — 200–400ms artificial latency (skippable via `X-Skip-Latency: true` header for tests), chaos 500 injection on POST/PUT/PATCH/DELETE when `X-Simulate-Chaos: true` or global chaos flag active.
+4. **Endpoints:**
+   - `UserEndpoints` — `GET /api/users`, `GET /api/users/{id}`, `POST /api/users`.
+   - `TodoEndpoints` — `GET /api/todos` (with `?userId=`), `GET /api/todos/{id}`, `POST /api/todos`, `PUT /api/todos/{id}/toggle`, `PUT /api/todos/{id}`, `DELETE /api/todos/{id}`.
+   - `ChaosEndpoints` — `GET /api/chaos`, `POST /api/chaos/toggle`, `POST /api/chaos`.
+5. **Program.cs** — Full DI wiring (singletons), CORS for Vite origins, Swagger/OpenAPI, middleware pipeline.
+6. **Integration Tests (`services/bff.tests/`):**
+   - `WebApplicationFactory<Program>` with `X-Skip-Latency: true` to bypass artificial delay.
+   - 24 integration tests: User CRUD, Todo CRUD + toggle + delete, Chaos header injection, chaos toggle round-trip, health check payload verification.
+   - **All 24 tests pass.**
+7. **Runtime Adaptation:** Detected machine has .NET 10 (not .NET 8); both projects updated to `net10.0` with matching `Microsoft.AspNetCore.Mvc.Testing 10.0.0`.
+
+---
+
+## 6. Sprint Execution Tracking Log
 
 | Sprint | Story / Topic | Key AI Prompts / Tools | Output Evaluation & Overrides | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **Sprint 0** | PRD, Architecture, Skills & Sprint Plan | `write_to_file`, Markdown generation | Integrated .NET 8 BFF, dual-mode fallback, and Slate + Indigo theme. | **Done** |
-| **Sprint 1** | Monorepo & Tooling Setup | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-01-monorepo-foundation`. Turborepo + pnpm workspace + .NET 8 BFF skeleton verified. | **Done** |
+| **Sprint 1** | Monorepo & Tooling Setup | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-01-monorepo-foundation`. Turborepo + pnpm workspace + .NET BFF skeleton verified. | **Done** |
 | **Sprint 2** | Shared Core & Dual-Mode Client | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-02-shared-core`. Domain types, query keys, dual-mode client + mock DB, UI kit, Jotai atoms, 29 passing tests. | **Done** |
-| **Sprint 3** | .NET 8 BFF Service (`services/bff`) | Pending | | Planned |
+| **Sprint 3** | .NET BFF Service (`services/bff`) | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-03-bff-service`. Full CRUD endpoints, chaos+latency middleware, 24 passing integration tests. Adapted to net10.0 (machine has .NET 10, not .NET 8). | **Done** |
 | **Sprint 4** | User Feature Module (`packages/users`) | Pending | | Planned |
 | **Sprint 5** | ToDo Feature Module (`packages/todos`) | Pending | | Planned |
 | **Sprint 6** | Shippable Web App Shell (`apps/web`) | Pending | | Planned |

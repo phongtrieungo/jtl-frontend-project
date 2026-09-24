@@ -12,8 +12,11 @@ build/
 
 
 # .NET / MSBuild outputs
-services/bff/bin/
-services/bff/obj/
+services/**/bin/
+services/**/obj/
+services/**/Library/
+services/**/.local/
+.dotnet/
 *.user
 
 # Environment and local configs
