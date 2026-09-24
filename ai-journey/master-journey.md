@@ -140,3 +140,6 @@ This document records how AI was utilized to architect, plan, and build this sol
 
 The original planning entries above record the initial .NET 8 choice. The developer has since confirmed that this repository will use .NET 10. Current implementation and specifications target `net10.0`, including ASP.NET Core OpenAPI and `Microsoft.AspNetCore.Mvc.Testing` 10.0.0. Current setup and architecture guidance use .NET 10; the earlier .NET 8 entries are retained as historical planning context.
 
+### README Update — Sprint 03 Delivery
+
+Updated the root README to mark Sprint 03 complete, document the implemented BFF endpoints and chaos/latency behavior, provide the standalone .NET 10 run and test commands, and distinguish the implemented backend/shared client from frontend work planned for Sprints 4–6.

@@ -16,7 +16,7 @@
 - **Styling & Tokens:** TailwindCSS (Slate + Indigo palette)
 - **Form Validation:** Zod with accessible inline error binding
 - **Accessibility:** WCAG 2.1 AA compliant, semantic HTML, visible keyboard focus rings, ARIA contracts
-- **Testing:** Vitest, React Testing Library, and jsdom
+- **Testing:** Vitest, React Testing Library, jsdom, and xUnit integration tests for the BFF
 
 ---
 
@@ -68,7 +68,7 @@
 | Path | Type | Status | Responsibilities |
 | :--- | :--- | :--- | :--- |
 | **`packages/shared`** | Core Library | **Ready (Sprint 2)** | Domain types, query keys (`userKeys`, `todoKeys`), Dual-Mode API Client, In-Browser Mock DB, Jotai atoms (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`), UI primitives (`Button`, `Input`, `Card`, `Badge`, `Alert`, `Spinner`, `ToastViewport`). |
-| **`services/bff`** | Backend Service | **Ready for Sprint 3** | ASP.NET Core (.NET 10) Minimal API, REST endpoints (`/api/users`, `/api/todos`), concurrent collections in-memory store, Swagger/OpenAPI, and latency/chaos middleware. |
+| **`services/bff`** | Backend Service | **Complete (Sprint 3)** | ASP.NET Core (.NET 10) Minimal API with health, user, todo, and chaos endpoints; seeded thread-safe in-memory stores; Swagger/OpenAPI; and latency/chaos middleware. Includes 24 xUnit integration tests. |
 | **`packages/users`** | Feature Module | *Scheduled (Sprint 4)* | User schemas, TanStack Query hooks (`useUsers`, `useUser`, `useCreateUser`), user forms, profiles, and directory components. |
 | **`packages/todos`** | Feature Module | *Scheduled (Sprint 5)* | ToDo schemas, optimistic mutation engine (`useCreateTodo`), task list, task rows, and status indicators. |
 | **`apps/web`** | Web Application | *Scheduled (Sprint 6)* | TanStack Router file-based route tree, layout shell, active user switcher, chaos toggle, and backend status indicator. |
@@ -97,6 +97,9 @@ pnpm typecheck
 # Run test suites across all packages
 pnpm test
 
+# Run the BFF integration tests (.NET 10)
+dotnet test services/bff.tests/Bff.Tests.csproj
+
 # Run build across all packages in topological order
 pnpm build
 
@@ -110,24 +113,29 @@ pnpm lint
 # Mode 1: Zero-Dependency In-Browser Mock Engine (No .NET required)
 pnpm dev
 
-# Mode 2: Full-Stack with .NET 10 Minimal API BFF
-pnpm dev:full
+# Mode 2: Run the BFF in one terminal
+dotnet run --project services/bff/bff.csproj -- --urls http://localhost:5000
+
+# Then run the web workspace in another terminal
+pnpm dev
 ```
+
+The BFF is available at `http://localhost:5000`. Its health endpoint is `/api/health`; Swagger UI is available at `/swagger` in the Development environment. The web app is currently a shell, so the BFF runs independently until frontend composition is delivered in later sprints. The root `pnpm test` command runs JavaScript workspace tests; use the `dotnet test` command above for BFF coverage.
 
 ---
 
-## 5. Core Architectural Highlights
+## 5. Sprint 03 BFF
 
-1. **Optimistic Mutations with Verifiable Rollback:**
-   - When creating a task, `useCreateTodo` injects the item into TanStack Query's cache immediately with an amber `Saving...` pulse badge.
-   - The form resets instantly for uninterrupted productivity.
-   - If the network request fails (or if the interactive **Chaos Mode** toggle is enabled), `onError` deterministically rolls back the cache to the pre-mutation snapshot and emits an accessible toast alert.
-2. **Interactive Chaos Simulation Toggle:**
-   - A dedicated UI toggle in the application header allows evaluators to simulate network/server 500 errors on demand to verify rollback behavior without proxy tools.
-3. **Atomic Cross-Cutting State via Jotai:**
-   - `activeUserIdAtom` stores the selected user and synchronizes context across the header, user directory, and task forms without prop drilling or heavy context providers.
-4. **Dual-Mode Adapter with Auto-Fallback:**
-   - `DualModeApiClient` connects to the ASP.NET Core .NET 10 BFF when available, but automatically catches network disconnections and transparently falls back to the in-browser mock engine so that evaluators never experience broken views.
+The BFF targets .NET 10 and uses seeded `ConcurrentDictionary` stores, so no external database is needed. Its API includes:
+
+- `GET /api/health`
+- `GET /api/users`, `GET /api/users/{id}`, and `POST /api/users`
+- `GET /api/todos?userId={id}`, `GET /api/todos/{id}`, `POST /api/todos`, `PUT /api/todos/{id}`, `PUT /api/todos/{id}/toggle`, and `DELETE /api/todos/{id}`
+- `GET /api/chaos`, `POST /api/chaos`, and `POST /api/chaos/toggle`
+
+Requests receive 200–400 ms of simulated latency by default. Send `X-Simulate-Chaos: true`, or enable server-side chaos through `/api/chaos`, to make mutating user and todo requests return a simulated 500 response. The integration tests use `X-Skip-Latency: true` to keep test runs fast.
+
+The shared package provides the dual-mode API client and mock engine. The user and todo feature packages, optimistic mutation UI, and routed application experience are planned in Sprints 4–6; they are not yet wired into the current web shell.
 
 ---
 
@@ -154,7 +162,7 @@ All project specifications, agent directives, and development roadmaps are track
 - [x] **Sprint 0:** Product Requirements, Architecture, Skills & Sprint Planning Baseline
 - [x] **Sprint 1:** Monorepo Foundation & Tooling Setup (`turbo.json`, `pnpm-workspace.yaml`, configs)
 - [x] **Sprint 2:** Core Domain, Dual-Mode API Adapter & Shared UI Kit (`packages/shared`)
-- [ ] **Sprint 3:** .NET 10 Backend-for-Frontend Service (`services/bff`)
+- [x] **Sprint 3:** .NET 10 Backend-for-Frontend Service (`services/bff`)
 - [ ] **Sprint 4:** User Feature Package (`packages/users`)
 - [ ] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
 - [ ] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
