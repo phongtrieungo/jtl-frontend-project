@@ -40,7 +40,7 @@ For ToDo creation (`useCreateTodo`), the agent must strictly preserve:
 
 ### Rule 5: Dual-Mode API Adapter & Evaluator Independence
 - The frontend must never strictly require `services/bff` to be running. If the .NET service is offline or uninstalled, the application must seamlessly fall back to the in-browser mock engine.
-- All HTTP communication with `services/bff` (.NET 8 Minimal API) is mediated through `packages/shared`.
+- All HTTP communication with `services/bff` (.NET 10 Minimal API) is mediated through `packages/shared`.
 
 ---
 
