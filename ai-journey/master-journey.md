@@ -63,16 +63,51 @@ This document records how AI was utilized to architect, plan, and build this sol
 
 ---
 
-## 4. Sprint Execution Tracking Log
+---
+
+## 4. Interaction Log: Phase 2 — Sprint 2 (Core Domain, Dual-Mode Adapter & Shared UI Kit)
+
+### 4.1 Prompt & Intent
+- **User Prompt:** "start sprint 2"
+- **Engineer Objective:** Deliver all core foundational contracts, the resilient Dual-Mode API adapter (BFF HTTP client + offline in-browser Mock DB with latency/chaos simulation), accessible UI kit components following Slate + Indigo tokens, cross-cutting Jotai atoms, and full test suite on branch `feature/sprint-02-shared-core`.
+
+### 4.2 Implemented Components & Stories
+1. **Story 2.1: Domain Type Contracts & Query Key Factories (`STORY-201`):**
+   - Declared immutable `User`, `UserSummary`, `CreateUserInput`, `Todo`, `TodoSummary`, `CreateTodoInput`, `UpdateTodoInput`, and `ApiHealthStatus` in `packages/shared/src/types/domain.ts`.
+   - Built const tuple query key factories (`userKeys`, `todoKeys`) in `packages/shared/src/api/queryKeys.ts`, verifying `todoKeys.byUser('123')` returns `['todos', 'list', { userId: '123' }]` as a const tuple.
+2. **Story 2.2: Dual-Mode API Client & In-Browser Mock Engine (`STORY-202`):**
+   - Implemented `MockDb` with pre-seeded demo users (Ada Lovelace, Alan Turing, Margaret Hamilton), tasks, dynamic task count calculation, 200–400ms latency emulation, and chaos error simulation on demand.
+   - Implemented `HttpBffClient` handling HTTP communication with ASP.NET Core .NET 8 Minimal API, including `X-Simulate-Chaos: true` request header injection.
+   - Implemented `DualModeApiClient` implementing the `ApiClient` contract with auto-detection, explicit mode selection (`bff` vs `mock`), and automatic fallback to mock DB upon network disconnection.
+3. **Story 2.3: Shared UI Primitives & Accessible Feedback Components (`STORY-203`):**
+   - Implemented `Button` (polymorphic variants, sizes, visible focus rings, inline `Spinner` with `aria-busy`).
+   - Implemented `Input` complying with strict WCAG 2.1 AA form accessibility contract (`htmlFor`/`id`, `aria-invalid`, `aria-describedby` linked to `role="alert"` error element).
+   - Implemented `Card` (composable header, title, description, content, footer).
+   - Implemented `Badge` (color ramp variants + optimistic `pulse` indicator).
+   - Implemented `Alert` (`role="alert"` for errors/warnings, `role="status"` for info/success, dismiss action).
+   - Implemented `Spinner` (accessible SVG with `role="status"` and `sr-only` label).
+   - Implemented `ToastViewport` (accessible notification center live region).
+4. **Story 2.4: Cross-Cutting Jotai Atoms (`STORY-204`):**
+   - `activeUserIdAtom` & derived `isUserSelectedAtom`.
+   - `isChaosActiveAtom` & alias `chaosModeAtom`.
+   - `toastsAtom` & `useToast` hook with auto-dismissal after 4 seconds.
+5. **Testing & Verification:**
+   - Configured Vitest + `@testing-library/react` + `jsdom`.
+   - Added 5 test suites with 29 unit tests covering domain query keys, mock DB operations, dual-mode fallback, Jotai state derivations, and UI accessibility contracts. All 29 tests pass with zero warnings.
+
+---
+
+## 5. Sprint Execution Tracking Log
 
 | Sprint | Story / Topic | Key AI Prompts / Tools | Output Evaluation & Overrides | Status |
 | :--- | :--- | :--- | :--- | :--- |
 | **Sprint 0** | PRD, Architecture, Skills & Sprint Plan | `write_to_file`, Markdown generation | Integrated .NET 8 BFF, dual-mode fallback, and Slate + Indigo theme. | **Done** |
 | **Sprint 1** | Monorepo & Tooling Setup | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-01-monorepo-foundation`. Turborepo + pnpm workspace + .NET 8 BFF skeleton verified. | **Done** |
-| **Sprint 2** | Shared Core & Dual-Mode Client | Pending | | Planned |
+| **Sprint 2** | Shared Core & Dual-Mode Client | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-02-shared-core`. Domain types, query keys, dual-mode client + mock DB, UI kit, Jotai atoms, 29 passing tests. | **Done** |
 | **Sprint 3** | .NET 8 BFF Service (`services/bff`) | Pending | | Planned |
 | **Sprint 4** | User Feature Module (`packages/users`) | Pending | | Planned |
 | **Sprint 5** | ToDo Feature Module (`packages/todos`) | Pending | | Planned |
 | **Sprint 6** | Shippable Web App Shell (`apps/web`) | Pending | | Planned |
 | **Sprint 7** | Reflections, AI Journey & README | Pending | | Planned |
+
 
