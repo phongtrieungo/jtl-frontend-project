@@ -12,6 +12,7 @@ This document records how AI was utilized to architect, plan, and build this sol
   - `frontend-coding` (TypeScript, React, Turborepo boundaries, TanStack Query/Router, Jotai, Zod)
   - `frontend-design` (Tailwind tokens, optimistic UX states, WCAG 2.1 AA a11y)
   - `frontend-testing` (Testing pyramid, RTL recipes, optimistic update rollback verification)
+  - `backend-dotnet` (ASP.NET Core .NET 8 Minimal API, thread-safe stores, latency/chaos middleware)
 
 ---
 

@@ -12,4 +12,5 @@ Refer to [AGENTS.md](file:///Users/ngotrieuphong/Projects/jtl/todo/AGENTS.md) fo
   - Coding: [.agents/skills/frontend-coding/SKILL.md](file:///Users/ngotrieuphong/Projects/jtl/todo/.agents/skills/frontend-coding/SKILL.md)
   - Design & A11y: [.agents/skills/frontend-design/SKILL.md](file:///Users/ngotrieuphong/Projects/jtl/todo/.agents/skills/frontend-design/SKILL.md)
   - Testing & Recipes: [.agents/skills/frontend-testing/SKILL.md](file:///Users/ngotrieuphong/Projects/jtl/todo/.agents/skills/frontend-testing/SKILL.md)
+  - Backend .NET: [.agents/skills/backend-dotnet/SKILL.md](file:///Users/ngotrieuphong/Projects/jtl/todo/.agents/skills/backend-dotnet/SKILL.md)
 - **Sprint Plan:** Refer to [docs/sprint-planning.md](file:///Users/ngotrieuphong/Projects/jtl/todo/docs/sprint-planning.md).

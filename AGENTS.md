@@ -11,6 +11,7 @@ Every agent interaction must align with the architecture, product requirements, 
   - Coding Standards: [.agents/skills/frontend-coding/SKILL.md](file:///Users/ngotrieuphong/Projects/jtl/todo/.agents/skills/frontend-coding/SKILL.md)
   - UI/UX & A11y Standards: [.agents/skills/frontend-design/SKILL.md](file:///Users/ngotrieuphong/Projects/jtl/todo/.agents/skills/frontend-design/SKILL.md)
   - Testing & Rollback Verification: [.agents/skills/frontend-testing/SKILL.md](file:///Users/ngotrieuphong/Projects/jtl/todo/.agents/skills/frontend-testing/SKILL.md)
+  - Backend .NET Standards: [.agents/skills/backend-dotnet/SKILL.md](file:///Users/ngotrieuphong/Projects/jtl/todo/.agents/skills/backend-dotnet/SKILL.md)
 
 ---
 
