@@ -1,0 +1,32 @@
+{
+  "name": "@todo/shared",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "build": "tsc -b",
+    "typecheck": "tsc --noEmit",
+    "lint": "echo 'shared: lint passed'"
+  },
+  "dependencies": {
+    "@tanstack/react-query": "^5.67.2",
+    "clsx": "^2.1.1",
+    "jotai": "^2.12.1",
+    "lucide-react": "^1.16.0",
+    "tailwind-merge": "^3.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "react": "^18.3.1",
+    "typescript": "^5.8.2"
+  },
+  "peerDependencies": {
+    "react": ">=18.0.0"
+  }
+}

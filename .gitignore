@@ -7,6 +7,14 @@ dist/
 build/
 .output/
 .turbo/
+.cache/
+*.tsbuildinfo
+
+
+# .NET / MSBuild outputs
+services/bff/bin/
+services/bff/obj/
+*.user
 
 # Environment and local configs
 .env
