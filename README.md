@@ -67,11 +67,11 @@
 
 | Path | Type | Status | Responsibilities |
 | :--- | :--- | :--- | :--- |
-| **`packages/shared`** | Core Library | **Ready (Sprint 2)** | Domain types, query keys (`userKeys`, `todoKeys`), Dual-Mode API Client, In-Browser Mock DB, Jotai atoms (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`), UI primitives (`Button`, `Input`, `Card`, `Badge`, `Alert`, `Spinner`, `ToastViewport`). |
-| **`services/bff`** | Backend Service | **Complete (Sprint 3)** | ASP.NET Core (.NET 10) Minimal API with health, user, todo, and chaos endpoints; seeded thread-safe in-memory stores; Swagger/OpenAPI; and latency/chaos middleware. Includes 24 xUnit integration tests. |
-| **`packages/users`** | Feature Module | *Scheduled (Sprint 4)* | User schemas, TanStack Query hooks (`useUsers`, `useUser`, `useCreateUser`), user forms, profiles, and directory components. |
-| **`packages/todos`** | Feature Module | *Scheduled (Sprint 5)* | ToDo schemas, optimistic mutation engine (`useCreateTodo`), task list, task rows, and status indicators. |
-| **`apps/web`** | Web Application | *Scheduled (Sprint 6)* | TanStack Router file-based route tree, layout shell, active user switcher, chaos toggle, and backend status indicator. |
+| **`packages/shared`** | Core Library | **Complete (Sprint 2)** | Domain types, query keys (`userKeys`, `todoKeys`), dual-mode API client, in-browser mock DB, Jotai atoms (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`), and accessible UI primitives. |
+| **`services/bff`** | Backend Service | **Complete (Sprint 3)** | ASP.NET Core (.NET 10) Minimal API with health, user, todo, and chaos endpoints; seeded thread-safe in-memory stores; OpenAPI; latency/chaos middleware; and 24 xUnit integration tests. |
+| **`packages/users`** | Feature Module | **Complete (Sprint 4)** | Zod user validation, TanStack Query hooks, accessible user creation form, profile card, and directory; includes unit/component tests. |
+| **`packages/todos`** | Feature Module | **Complete (Sprint 5)** | Zod task validation, user-scoped query hook, optimistic create with rollback and toast feedback, accessible create form, task list and saving status; includes schema and mutation lifecycle tests. |
+| **`apps/web`** | Web Application | **In progress (Sprint 6 pending)** | Vite/React entry point and Tailwind setup exist. The entry point is still a placeholder screen; routes, app shell, and feature composition are not implemented yet. |
 
 ---
 
@@ -120,11 +120,11 @@ dotnet run --project services/bff/bff.csproj -- --urls http://localhost:5000
 pnpm dev
 ```
 
-The BFF is available at `http://localhost:5000`. Its health endpoint is `/api/health`; Swagger UI is available at `/swagger` in the Development environment. The web app is currently a shell, so the BFF runs independently until frontend composition is delivered in later sprints. The root `pnpm test` command runs JavaScript workspace tests; use the `dotnet test` command above for BFF coverage.
+The BFF is available at `http://localhost:5000`. Its health endpoint is `/api/health`; Swagger UI is available at `/swagger` in the Development environment. The current web entry point is still a placeholder and does not yet compose the user and ToDo packages into routes. The root `pnpm test` command runs JavaScript workspace tests; use the `dotnet test` command above for BFF coverage. To run only the ToDo package tests, use `pnpm --filter @todo/todos test`.
 
 ---
 
-## 5. Sprint 03 BFF
+## 5. Current Backend: Sprint 03 BFF
 
 The BFF targets .NET 10 and uses seeded `ConcurrentDictionary` stores, so no external database is needed. Its API includes:
 
@@ -135,11 +135,17 @@ The BFF targets .NET 10 and uses seeded `ConcurrentDictionary` stores, so no ext
 
 Requests receive 200–400 ms of simulated latency by default. Send `X-Simulate-Chaos: true`, or enable server-side chaos through `/api/chaos`, to make mutating user and todo requests return a simulated 500 response. The integration tests use `X-Skip-Latency: true` to keep test runs fast.
 
-The shared package provides the dual-mode API client and mock engine. The user and todo feature packages, optimistic mutation UI, and routed application experience are planned in Sprints 4–6; they are not yet wired into the current web shell.
+The shared package provides the dual-mode API client and mock engine. The user and ToDo feature packages are implemented and independently buildable/testable. Their UI is not yet wired into `apps/web`; route composition and the app shell remain Sprint 6 work.
+
+## 6. Current Sprint Status
+
+Sprints 0–5 are complete: planning and repository foundation, shared core, .NET BFF, user feature package, and ToDo feature package with optimistic rollback. Sprint 6 (web shell and route composition) and Sprint 7 (final reflections and polish) remain.
+
+The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
 
 ---
 
-## 6. Documentation & Specifications Index
+## 7. Documentation & Specifications Index
 
 All project specifications, agent directives, and development roadmaps are tracked under version control:
 
@@ -157,13 +163,13 @@ All project specifications, agent directives, and development roadmaps are track
 
 ---
 
-## 7. Development Roadmap (7 Sprints)
+## 8. Development Roadmap (7 Sprints)
 
 - [x] **Sprint 0:** Product Requirements, Architecture, Skills & Sprint Planning Baseline
 - [x] **Sprint 1:** Monorepo Foundation & Tooling Setup (`turbo.json`, `pnpm-workspace.yaml`, configs)
 - [x] **Sprint 2:** Core Domain, Dual-Mode API Adapter & Shared UI Kit (`packages/shared`)
 - [x] **Sprint 3:** .NET 10 Backend-for-Frontend Service (`services/bff`)
-- [ ] **Sprint 4:** User Feature Package (`packages/users`)
-- [ ] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
+- [x] **Sprint 4:** User Feature Package (`packages/users`)
+- [x] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
 - [ ] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
 - [ ] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
