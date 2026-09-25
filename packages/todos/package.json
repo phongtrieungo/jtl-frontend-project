@@ -11,6 +11,7 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc --noEmit",
+    "test": "vitest run --config vitest.config.ts",
     "lint": "echo 'todos: lint passed'"
   },
   "dependencies": {
