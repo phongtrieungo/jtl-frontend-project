@@ -131,7 +131,7 @@ This document records how AI was utilized to architect, plan, and build this sol
 | **Sprint 1** | Monorepo & Tooling Setup | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-01-monorepo-foundation`. Turborepo + pnpm workspace + .NET BFF skeleton verified. | **Done** |
 | **Sprint 2** | Shared Core & Dual-Mode Client | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-02-shared-core`. Domain types, query keys, dual-mode client + mock DB, UI kit, Jotai atoms, 29 passing tests. | **Done** |
 | **Sprint 3** | .NET BFF Service (`services/bff`) | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-03-bff-service`. Full CRUD endpoints, chaos+latency middleware, 24 passing integration tests. Adapted to net10.0 (machine has .NET 10, not .NET 8). | **Done** |
-| **Sprint 4** | User Feature Module (`packages/users`) | Pending | | Planned |
+| **Sprint 4** | User Feature Module (`packages/users`) | User request: “start sprint 04”; implementation and acceptance verification | STORY-401 and STORY-402 implemented; package tests, build, and typecheck pass. | **Done** |
 | **Sprint 5** | ToDo Feature Module (`packages/todos`) | Pending | | Planned |
 | **Sprint 6** | Shippable Web App Shell (`apps/web`) | Pending | | Planned |
 | **Sprint 7** | Reflections, AI Journey & README | Pending | | Planned |
@@ -143,3 +143,10 @@ The original planning entries above record the initial .NET 8 choice. The develo
 ### README Update — Sprint 03 Delivery
 
 Updated the root README to mark Sprint 03 complete, document the implemented BFF endpoints and chaos/latency behavior, provide the standalone .NET 10 run and test commands, and distinguish the implemented backend/shared client from frontend work planned for Sprints 4–6.
+
+### Sprint 04 — User Feature Package (2026-09-25)
+
+- **Prompt:** “start sprint 04”
+- **Action:** Implemented `createUserSchema`; TanStack Query hooks for listing, loading, and creating users; and accessible create form, directory, and profile components in `packages/users`. The create hook invalidates the user list after success, and all package functionality is exported through the package root.
+- **Architecture:** The feature depends only on `@todo/shared` and package dependencies; it introduces no users-to-todos dependency. Form input is Zod-validated before the mutation runs, with inline associated errors and toast feedback.
+- **Verification:** Added user schema, form validation, and mutation invalidation tests. `pnpm --filter @todo/users test` (7 tests), `typecheck`, and `build` pass; `git diff --check` is clean.
