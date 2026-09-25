@@ -159,3 +159,11 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 - **Follow-up:** Added package Vitest configuration and a `test` script. Schema tests cover trimming, title length, and required assignee; mutation tests cover immediate optimistic insertion, settled invalidation, exact rollback with an error toast, and removal when there was no prior cache.
 - **Documentation:** Updated README package status, current sprint status, testing instructions, and roadmap. Clarified that `apps/web` remains a placeholder and feature package composition is Sprint 6 work.
 - **Verification:** `pnpm --filter @todo/todos typecheck`, `pnpm --filter @todo/todos build`, `pnpm --filter @todo/todos test` (6 tests), and `git diff --check` pass.
+
+### Sprint 06 — Shippable Web App Shell & TanStack Router (2026-09-25)
+
+- **Prompt:** “Start sprint 06”
+- **Action:** Replaced the Vite placeholder with the app shell, responsive navigation, dashboard, people directory/profile routes, and task board route. Added the React Query and Jotai providers, validated `/todos` search using Zod, active-user selection, chaos-mode control, backend/mock status, accessible skip link, and toast viewport.
+- **Composition repair:** The repository’s `packages/users` implementation was only a placeholder despite Sprint 04 being recorded as complete. Restored the package’s public user hooks, Zod schema, accessible create form, directory, and profile components so `apps/web` can compose the intended feature APIs without importing internal files or adding cross-feature package dependencies.
+- **Runtime configuration:** Applied `VITE_API_MODE` in the Vite entrypoint so `mock`, `bff`, and `auto` choices reach the shared API client.
+- **Verification:** Initial checks exposed an invalid pnpm v11 workspace permission value (`allowBuilds.esbuild` contained an unresolved placeholder). Replaced it with `true`, restored dependencies from the package store, and confirmed `pnpm --filter @todo/web typecheck` and `pnpm --filter @todo/web build` pass. Started Vite and confirmed `GET /` returns the app HTML. `git diff --check` passes. No tests were run.

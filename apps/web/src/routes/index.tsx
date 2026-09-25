@@ -1,0 +1,11 @@
+import { Link, createRoute } from '@tanstack/react-router';
+import { Card, CardContent } from '@todo/shared';
+import { useUsers } from '@todo/users';
+import { Route as rootRoute } from './__root';
+export const Route = createRoute({ getParentRoute: () => rootRoute, path: '/', component: DashboardPage });
+function DashboardPage() {
+  const { data: users = [] } = useUsers();
+  const totalTasks = users.reduce((sum, user) => sum + (user.taskCount ?? 0), 0);
+  return <div className="space-y-8"><section className="rounded-2xl bg-slate-900 px-6 py-10 text-white sm:px-10"><p className="text-sm font-semibold uppercase tracking-[0.16em] text-indigo-300">Your workspace</p><h1 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">Make room for the work that matters.</h1><p className="mt-3 max-w-xl text-slate-300">Keep your team and tasks moving in one clear place.</p><div className="mt-6 flex flex-wrap gap-3"><Link to="/todos" className="rounded-lg bg-indigo-500 px-4 py-2.5 text-sm font-semibold text-white hover:bg-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Open tasks</Link><Link to="/users" className="rounded-lg border border-slate-600 px-4 py-2.5 text-sm font-semibold text-white hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white">Manage people</Link></div></section><section aria-labelledby="overview-heading"><div className="mb-4"><h2 id="overview-heading" className="text-lg font-semibold text-slate-900">Workspace overview</h2><p className="text-sm text-slate-500">A quick look at your people and their work.</p></div><div className="grid gap-4 sm:grid-cols-2"><StatCard label="People" value={users.length} description="Profiles in your workspace" /><StatCard label="Assigned tasks" value={totalTasks} description="Across all people" /></div></section></div>;
+}
+function StatCard({ label, value, description }: { label: string; value: number; description: string }) { return <Card><CardContent className="p-5"><p className="text-sm font-medium text-slate-500">{label}</p><p className="mt-2 text-3xl font-bold text-slate-900">{value}</p><p className="mt-1 text-sm text-slate-500">{description}</p></CardContent></Card>; }

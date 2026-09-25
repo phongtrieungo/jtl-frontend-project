@@ -71,7 +71,7 @@
 | **`services/bff`** | Backend Service | **Complete (Sprint 3)** | ASP.NET Core (.NET 10) Minimal API with health, user, todo, and chaos endpoints; seeded thread-safe in-memory stores; OpenAPI; latency/chaos middleware; and 24 xUnit integration tests. |
 | **`packages/users`** | Feature Module | **Complete (Sprint 4)** | Zod user validation, TanStack Query hooks, accessible user creation form, profile card, and directory; includes unit/component tests. |
 | **`packages/todos`** | Feature Module | **Complete (Sprint 5)** | Zod task validation, user-scoped query hook, optimistic create with rollback and toast feedback, accessible create form, task list and saving status; includes schema and mutation lifecycle tests. |
-| **`apps/web`** | Web Application | **In progress (Sprint 6 pending)** | Vite/React entry point and Tailwind setup exist. The entry point is still a placeholder screen; routes, app shell, and feature composition are not implemented yet. |
+| **`apps/web`** | Web Application | **Implemented (Sprint 6)** | TanStack Router shell with dashboard, user directory/profile, and user-filtered task board. |
 
 ---
 
@@ -135,11 +135,11 @@ The BFF targets .NET 10 and uses seeded `ConcurrentDictionary` stores, so no ext
 
 Requests receive 200–400 ms of simulated latency by default. Send `X-Simulate-Chaos: true`, or enable server-side chaos through `/api/chaos`, to make mutating user and todo requests return a simulated 500 response. The integration tests use `X-Skip-Latency: true` to keep test runs fast.
 
-The shared package provides the dual-mode API client and mock engine. The user and ToDo feature packages are implemented and independently buildable/testable. Their UI is not yet wired into `apps/web`; route composition and the app shell remain Sprint 6 work.
+The shared package provides the dual-mode API client and mock engine. The user and ToDo feature packages expose their UI and data hooks for composition in `apps/web`. The web application provides the dashboard, user directory/profile, task board, active user switcher, chaos control, backend status, and toast viewport.
 
 ## 6. Current Sprint Status
 
-Sprints 0–5 are complete: planning and repository foundation, shared core, .NET BFF, user feature package, and ToDo feature package with optimistic rollback. Sprint 6 (web shell and route composition) and Sprint 7 (final reflections and polish) remain.
+Sprints 0–6 are implemented: planning and repository foundation, shared core, .NET BFF, user and ToDo feature packages, and web shell with route composition. Sprint 7 (final reflections and polish) remains. Sprint 6 typecheck/build verification is pending because the offline package store could not restore the workspace dependencies.
 
 The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
 
@@ -171,5 +171,5 @@ All project specifications, agent directives, and development roadmaps are track
 - [x] **Sprint 3:** .NET 10 Backend-for-Frontend Service (`services/bff`)
 - [x] **Sprint 4:** User Feature Package (`packages/users`)
 - [x] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
-- [ ] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
+- [x] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
 - [ ] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
