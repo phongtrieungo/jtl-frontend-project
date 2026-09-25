@@ -1,8 +1,8 @@
-// @todo/users public API entrypoint
-import { type UserSummary } from '@todo/shared';
-
-export const USERS_MODULE_VERSION = '0.1.0';
-
-export interface User extends UserSummary {
-  createdAt: string;
-}
+/** Public API for the isolated user feature package. */
+export { createUserSchema, type CreateUserFormInput } from './schemas/userSchemas';
+export { useUsers } from './hooks/useUsers';
+export { useUser } from './hooks/useUser';
+export { useCreateUser } from './hooks/useCreateUser';
+export { UserCreateForm } from './components/UserCreateForm';
+export { UserDetailCard, type UserDetailCardProps } from './components/UserDetailCard';
+export { UserList, type UserListProps } from './components/UserList';

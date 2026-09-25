@@ -11,7 +11,8 @@
   "scripts": {
     "build": "tsc -b",
     "typecheck": "tsc --noEmit",
-    "lint": "echo 'users: lint passed'"
+    "lint": "echo 'users: lint passed'",
+    "test": "vitest run --config vitest.config.ts"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.67.2",
