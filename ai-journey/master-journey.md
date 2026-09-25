@@ -133,8 +133,8 @@ This document records how AI was utilized to architect, plan, and build this sol
 | **Sprint 3** | .NET BFF Service (`services/bff`) | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-03-bff-service`. Full CRUD endpoints, chaos+latency middleware, 24 passing integration tests. Adapted to net10.0 (machine has .NET 10, not .NET 8). | **Done** |
 | **Sprint 4** | User Feature Module (`packages/users`) | User request: “start sprint 04”; implementation and acceptance verification | STORY-401 and STORY-402 implemented; package tests, build, and typecheck pass. | **Done** |
 | **Sprint 5** | ToDo Feature Module (`packages/todos`) | User requests: “Start sprint 05”; “Write the unit test and update the README with current state of the project” | STORY-501 and STORY-502 implemented; schema/mutation tests, package typecheck/build, and diff check pass. README reflects completed Sprints 0–5 and the pending web composition work. | **Done** |
-| **Sprint 6** | Shippable Web App Shell (`apps/web`) | Pending | | Planned |
-| **Sprint 7** | Reflections, AI Journey & README | Pending | | Planned |
+| **Sprint 6** | Shippable Web App Shell (`apps/web`) | User request: “Start sprint 06”; implementation and verification recorded below | Responsive routed app shell, feature composition, and web typecheck/build completed. | **Done** |
+| **Sprint 7** | Reflections, AI Journey & README | User request: “start the final sprint”; documentation review and full-stack launcher implementation | README corrected, `docs/reflection.md` added, `pnpm dev:full` implemented, and this journey updated. | **Done** |
 
 ## Developer Override — .NET 10 Standard (2026-09-24)
 
@@ -167,3 +167,13 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 - **Composition repair:** The repository’s `packages/users` implementation was only a placeholder despite Sprint 04 being recorded as complete. Restored the package’s public user hooks, Zod schema, accessible create form, directory, and profile components so `apps/web` can compose the intended feature APIs without importing internal files or adding cross-feature package dependencies.
 - **Runtime configuration:** Applied `VITE_API_MODE` in the Vite entrypoint so `mock`, `bff`, and `auto` choices reach the shared API client.
 - **Verification:** Initial checks exposed an invalid pnpm v11 workspace permission value (`allowBuilds.esbuild` contained an unresolved placeholder). Replaced it with `true`, restored dependencies from the package store, and confirmed `pnpm --filter @todo/web typecheck` and `pnpm --filter @todo/web build` pass. Started Vite and confirmed `GET /` returns the app HTML. `git diff --check` passes. No tests were run.
+
+### Sprint 07 — Production Reflections, AI Journey & README (2026-09-25)
+
+- **Prompt:** “start the final sprint”
+- **Plan:** Reviewed the final sprint stories and current README, package scripts, route loading, query options, and existing interaction log before editing. The task was documentation and local development handover; no feature coding skill applied. The session ran in Codex (GPT-6); no model-switch decision was made for this sprint.
+- **Story 7.1:** Updated the README to explain package boundaries, mock fallback, BFF placement, and the actual mock/full-stack startup commands. Corrected stale placeholder and sprint-status statements.
+- **Startup improvement:** Added `pnpm dev:full` via `scripts/dev-full.mjs` to start the .NET BFF and Vite app together and stop both processes when one exits.
+- **Story 7.2:** Added `docs/reflection.md` covering query cache freshness/retention, Jotai render scope, route loading, the four testing layers, and an ordered optimistic rollback verification flow. Explicitly recorded that feature queries currently use 30s `staleTime` (rather than the roadmap's 60s target), and route modules are currently eager, so code splitting is a follow-up opportunity.
+- **Story 7.3:** Updated this log with the prompt, planning approach, implementation decisions, and verification boundary. No developer override was needed.
+- **Verification:** `node --check scripts/dev-full.mjs` and `git diff --check` pass. No test suite was run. The full-stack launcher was not started in this turn, so its runtime behavior still needs a local .NET 10 run.

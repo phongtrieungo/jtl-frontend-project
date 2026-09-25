@@ -113,14 +113,13 @@ pnpm lint
 # Mode 1: Zero-Dependency In-Browser Mock Engine (No .NET required)
 pnpm dev
 
-# Mode 2: Run the BFF in one terminal
-dotnet run --project services/bff/bff.csproj -- --urls http://localhost:5000
-
-# Then run the web workspace in another terminal
-pnpm dev
+# Mode 2: Full-stack app (requires .NET 10 SDK)
+pnpm dev:full
 ```
 
-The BFF is available at `http://localhost:5000`. Its health endpoint is `/api/health`; Swagger UI is available at `/swagger` in the Development environment. The current web entry point is still a placeholder and does not yet compose the user and ToDo packages into routes. The root `pnpm test` command runs JavaScript workspace tests; use the `dotnet test` command above for BFF coverage. To run only the ToDo package tests, use `pnpm --filter @todo/todos test`.
+For separate terminals in full-stack mode, run `dotnet run --project services/bff/bff.csproj -- --urls http://localhost:5000` and `pnpm dev:web`.
+
+The BFF is available at `http://localhost:5000`. Its health endpoint is `/api/health`; Swagger UI is available at `/swagger` in the Development environment. `pnpm dev` runs the web app in its configured mode (automatic mode falls back to the in-browser mock when the BFF is unavailable); `pnpm dev:full` starts the BFF and web app together and stops both when either process exits. The root `pnpm test` command runs JavaScript workspace tests; use the `dotnet test` command above for BFF coverage.
 
 ---
 
@@ -139,7 +138,7 @@ The shared package provides the dual-mode API client and mock engine. The user a
 
 ## 6. Current Sprint Status
 
-Sprints 0–6 are implemented: planning and repository foundation, shared core, .NET BFF, user and ToDo feature packages, and web shell with route composition. Sprint 7 (final reflections and polish) remains. Sprint 6 typecheck/build verification is pending because the offline package store could not restore the workspace dependencies.
+Sprints 0–7 are implemented: planning and repository foundation, shared core, .NET BFF, user and ToDo feature packages, web shell with route composition, and final handover/reflection documentation. The web app has been typechecked and built; see [the AI journey](ai-journey/master-journey.md) for the latest verification record.
 
 The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
 
@@ -172,4 +171,6 @@ All project specifications, agent directives, and development roadmaps are track
 - [x] **Sprint 4:** User Feature Package (`packages/users`)
 - [x] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
 - [x] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
-- [ ] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
+- [x] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
+
+Performance and testing trade-offs, including current query cache settings, route loading status, and the four-layer test strategy, are documented in [docs/reflection.md](docs/reflection.md).
