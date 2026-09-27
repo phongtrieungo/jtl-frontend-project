@@ -67,6 +67,13 @@ export {
   type ToastOptions,
 } from './state/toastAtom';
 
+export {
+  themePreferenceAtom,
+  densityPreferenceAtom,
+  type ThemePreference,
+  type DensityPreference,
+} from './state/displayPreferencesAtom';
+
 // 5. Shared UI Primitives
 export {
   Button,

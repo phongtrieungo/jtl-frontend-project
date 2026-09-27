@@ -144,7 +144,7 @@ The shared package provides the dual-mode API client and mock engine. The user a
 
 ## 6. Current Sprint Status
 
-Sprints 0–8 core scope is implemented. The React showcase adds optimistic create/toggle/edit/delete lifecycles, shareable discovery, query-derived dashboard insights, deterministic feature tests, and a composed Playwright rollback flow. Optional bulk actions and personalization remain explicitly deferred stretch work; see [the sprint plan](docs/sprint-planning.md#sprint-8-react-showcase--resilient-task-lifecycle--discovery).
+Sprints 0–8 core scope is implemented. The React showcase adds optimistic create/toggle/edit/delete lifecycles, shareable discovery, query-derived dashboard insights, deterministic feature tests, a composed Playwright rollback flow, and local draft/display preference resilience. Optional bulk actions remain explicitly deferred stretch work; see [the sprint plan](docs/sprint-planning.md#sprint-8-react-showcase--resilient-task-lifecycle--discovery).
 
 The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
 
@@ -156,9 +156,10 @@ Sprint 8 evolved the task board without changing its monorepo boundaries. Its de
 - shareable, Zod-validated URL filters for assignee, status, search, and sort;
 - query-derived dashboard insights with typed drill-down navigation; and
 - feature tests for immediate optimistic state, success reconciliation, and exact failure rollback; and
-- Playwright verification of user selection, task creation, Chaos Mode, the visible saving state, and retryable rollback feedback.
+- Playwright verification of user selection, task creation, Chaos Mode, the visible saving state, and retryable rollback feedback; and
+- per-user valid task drafts plus persisted light/dark/system theme and compact/comfortable density preferences.
 
-`pnpm lint` now performs real strict TypeScript and package-boundary validation instead of placeholder package scripts. Bulk actions with undo, draft persistence, and display preferences remain deferred stretch work.
+`pnpm lint` now performs real strict TypeScript and package-boundary validation instead of placeholder package scripts. Bulk actions with undo remain deferred stretch work.
 
 ---
 

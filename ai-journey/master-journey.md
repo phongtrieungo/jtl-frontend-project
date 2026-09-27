@@ -222,3 +222,13 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 - **Verification:** `pnpm lint`, `pnpm build`, and `pnpm test` pass (59 JavaScript tests: shared 29, todos 22, web 8); `pnpm test:e2e` passes (1 Chromium flow); and `dotnet test services/bff.tests/Bff.Tests.csproj` passes (24 integration tests). `git diff --check` is clean.
 - **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` shaped package ownership, accessible assertions, mutation lifecycle coverage, and the four-layer verification split.
 - **Developer override:** None. Existing untracked study-guide documents were preserved. Core Sprint 8 is complete; Stories 8.5–8.6 remain optional deferred stretch work.
+
+### Sprint 08 — Story 8.6: Resilience and Personalization Polish (2026-09-27)
+
+- **Prompt:** “Start the story 8.6”.
+- **Action:** Added schema-gated, per-user task draft persistence in `packages/todos`. Valid unfinished titles restore from local storage after refresh without invoking a mutation; invalid, malformed, submitted, and cleared drafts are not restored.
+- **Personalization:** Added persisted Jotai atoms for light/dark/system theme and compact/comfortable density, plus labelled header controls. The app resolves system theme through `prefers-color-scheme`, reacts to operating-system theme changes, applies document-level theme/density attributes, and provides dark-mode surface, text, control, and focus treatments.
+- **Architecture:** Drafts remain local form state rather than server cache. Display preferences are minimal cross-cutting UI state in `packages/shared`; no task records or URL filters moved into Jotai, and no sideways package dependency was introduced.
+- **Testing:** Added hook tests for valid restoration, per-user isolation, malformed/invalid rejection, updates, and clearing. Added component tests for persisted preference selection, fresh-provider restoration, and live system-theme changes, plus a composed browser test proving that draft and display preferences survive a real page reload without creating a task.
+- **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` guided local-state ownership, WCAG focus/contrast behavior, and the unit/component verification split.
+- **Developer override:** None. Story 8.5 remains deferred, and existing unrelated study-guide files were preserved.
