@@ -9,11 +9,14 @@
     "dev:full": "node scripts/dev-full.mjs",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
-    "lint": "turbo run lint",
+    "lint": "node scripts/validate-boundaries.mjs && turbo run typecheck",
     "test": "turbo run test",
+    "test:e2e": "playwright test",
+    "test:all": "pnpm test && pnpm test:e2e",
     "clean": "turbo run clean"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
     "jsdom": "^30.1.1",

@@ -23,16 +23,16 @@ The project uses a four-layer pyramid:
 1. **Unit tests:** validate domain helpers, schemas, query keys, and mock engine behavior.
 2. **Component and hook tests:** use Vitest, React Testing Library, and jsdom to verify accessible form behavior, mutation states, and cache effects.
 3. **Service integration tests:** xUnit with `WebApplicationFactory<Program>` exercises the .NET endpoints, stores, chaos behavior, and health response over an in-process HTTP boundary.
-4. **End-to-end checks:** exercise the composed app in a browser across mock and BFF modes, including navigation and user workflows. This layer is a recommended addition; no dedicated browser automation suite is currently configured.
+4. **End-to-end checks:** Playwright exercises the composed app against the deterministic in-browser mock adapter. The delivered flow selects a user, creates and reconciles a task, enables Chaos Mode, observes the optimistic “Saving...” state, and verifies removal plus retryable rollback feedback. The BFF transport is covered separately by the xUnit integration suite.
 
 ### Optimistic rollback verification
 
-The create-task mutation's key behavior should be verified in this order:
+Each task mutation's key behavior is verified in this order:
 
 1. Seed the query cache with a known per-user task list and trigger the mutation.
 2. Assert that the in-flight list query is cancelled and the cache immediately contains a temporary task marked optimistic.
 3. Resolve the API promise and assert that settled invalidation is requested so server state can reconcile the cache.
 4. In a separate case, reject the API promise (or enable chaos mode), then assert the cache exactly matches its original snapshot, the temporary row is gone, and a non-blocking error toast is emitted.
-5. Repeat with an initially empty cache to confirm rollback removes the optimistic cache entry rather than leaving stale data.
+5. For create, repeat with an initially empty cache to confirm rollback removes the optimistic cache entry rather than leaving stale data. For delete, verify the exact original list order is restored.
 
-The existing hook tests cover optimistic insertion, invalidation, snapshot rollback, toast feedback, and the no-prior-cache case. BFF integration tests cover HTTP chaos behavior. Browser-level end-to-end verification remains a useful next layer for confirming the visible “Saving…” and rollback experience in the composed app.
+The hook suites cover create, toggle, edit, and delete across immediate optimistic state, successful settlement/invalidation, exact snapshot rollback, and retryable error toasts. Discovery suites cover Zod URL normalization, deep-link restoration, the 300 ms debounce, labelled controls, and distinct empty states. The Playwright suite confirms the visible composed experience, while BFF integration tests cover HTTP chaos behavior.

@@ -1,7 +1,7 @@
 # Sprint Planning & Engineering Execution Roadmap
 
 ## Executive Overview
-This document establishes the comprehensive development plan for the **User & ToDo Monorepo Platform**. Structured across 7 focused sprints, this plan guides implementation from repository foundation through feature packages, .NET 10 BFF service, optimistic mutation resilience, routing composition, and final documentation deliverables.
+This document establishes the comprehensive development plan for the **User & ToDo Monorepo Platform**. Structured across 8 focused sprints, this plan guides implementation from repository foundation through feature packages, .NET 10 BFF service, optimistic mutation resilience, routing composition, showcase verification, and final documentation deliverables.
 
 Each story adheres to standard agile requirements:
 - **User Story Statement** (`As a... I want... So that...`)
@@ -310,7 +310,7 @@ Each story adheres to standard agile requirements:
 ---
 
 ## Sprint 8: React Showcase — Resilient Task Lifecycle & Discovery
-**Status:** In progress — Stories 8.1–8.3 complete; Story 8.4 pending
+**Status:** Core complete (2026-09-27) — Stories 8.1–8.4 delivered; stretch Stories 8.5–8.6 deferred
 **Goal:** Extend the completed take-home into a concise interview showcase. The sprint demonstrates advanced React state management without widening the architecture: optimistic task mutations, type-safe URL-driven discovery, derived dashboard insights, and evidence-backed resilience.
 
 ### Sprint Guardrails
@@ -377,6 +377,7 @@ Each story adheres to standard agile requirements:
 ### Story 8.4: Showcase Verification
 - **ID:** `STORY-804`
 - **Priority:** Core
+- **Status:** Complete (2026-09-27)
 - **User Story:**
   *As an evaluator, I want deterministic evidence that advanced task interactions remain correct, accessible, and resilient under failure.*
 - **Scope & Targets:**
@@ -392,6 +393,7 @@ Each story adheres to standard agile requirements:
 ### Story 8.5: Bulk Actions with Undo
 - **ID:** `STORY-805`
 - **Priority:** Stretch
+- **Status:** Deferred — core scope is complete
 - **User Story:**
   *As an operator, I want to complete or delete multiple selected tasks and undo a recent bulk action so that repetitive work is efficient and recoverable.*
 - **Scope & Targets:**
@@ -404,6 +406,7 @@ Each story adheres to standard agile requirements:
 ### Story 8.6: Resilience and Personalization Polish
 - **ID:** `STORY-806`
 - **Priority:** Stretch
+- **Status:** Deferred — core scope is complete
 - **User Story:**
   *As an operator, I want unfinished input and display preferences to survive a refresh so that the app feels dependable during everyday use.*
 - **Scope & Targets:**

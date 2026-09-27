@@ -25,10 +25,15 @@ function createWrapper(queryClient: QueryClient) {
   };
 }
 
+async function flushMutation(promise: Promise<unknown>): Promise<void> {
+  await promise.catch(() => undefined);
+  await new Promise<void>((resolve) => setTimeout(resolve, 0));
+}
+
 describe('useCreateTodo', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-    getDefaultStore().set(toastsAtom, []);
+    act(() => getDefaultStore().set(toastsAtom, []));
   });
 
   it('inserts a temporary item before the API resolves, then invalidates on success', async () => {
@@ -40,17 +45,21 @@ describe('useCreateTodo', () => {
     queryClient.setQueryData(queryKey, [existingTodo]);
     const { result } = renderHook(() => useCreateTodo(), { wrapper: createWrapper(queryClient) });
 
-    act(() => result.current.mutate(input));
+    let mutationPromise!: Promise<Todo>;
+    await act(async () => { mutationPromise = result.current.mutateAsync(input); await new Promise<void>((resolve) => setTimeout(resolve, 0)); });
     await waitFor(() => expect(queryClient.getQueryData<Todo[]>(queryKey)).toHaveLength(2));
     const optimisticTodo = queryClient.getQueryData<Todo[]>(queryKey)?.[1];
     expect(optimisticTodo).toMatchObject({ title: input.title, assigneeId: userId, isOptimistic: true });
     expect(optimisticTodo?.id).toMatch(/^temp-/);
 
-    resolveCreate({ ...optimisticTodo!, id: 'todo-2', isOptimistic: undefined });
+    await act(async () => {
+      resolveCreate({ ...optimisticTodo!, id: 'todo-2', isOptimistic: undefined });
+      await flushMutation(mutationPromise);
+    });
     await waitFor(() => expect(result.current.isSuccess).toBe(true));
     expect(createTodo).toHaveBeenCalledWith(input, { chaos: false });
     expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(true);
-    queryClient.clear();
+    act(() => queryClient.clear());
   });
 
   it('restores the exact cache snapshot and dispatches an error toast on failure', async () => {
@@ -63,9 +72,13 @@ describe('useCreateTodo', () => {
     queryClient.setQueryData(queryKey, snapshot);
     const { result } = renderHook(() => useCreateTodo(), { wrapper: createWrapper(queryClient) });
 
-    act(() => result.current.mutate(input));
+    let mutationPromise!: Promise<Todo>;
+    await act(async () => { mutationPromise = result.current.mutateAsync(input); await new Promise<void>((resolve) => setTimeout(resolve, 0)); });
     await waitFor(() => expect(queryClient.getQueryData<Todo[]>(queryKey)).toHaveLength(2));
-    rejectCreate(new Error('Simulated Network Failure'));
+    await act(async () => {
+      rejectCreate(new Error('Simulated Network Failure'));
+      await flushMutation(mutationPromise);
+    });
 
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(queryClient.getQueryData(queryKey)).toEqual(snapshot);
@@ -76,7 +89,7 @@ describe('useCreateTodo', () => {
         message: expect.stringContaining('Your changes were reverted.'),
       }),
     ]));
-    queryClient.clear();
+    act(() => queryClient.clear());
   });
 
   it('removes the optimistic query again when there was no previous cache entry', async () => {
@@ -86,11 +99,15 @@ describe('useCreateTodo', () => {
     const queryKey = todoKeys.byUser(userId);
     const { result } = renderHook(() => useCreateTodo(), { wrapper: createWrapper(queryClient) });
 
-    act(() => result.current.mutate(input));
+    let mutationPromise!: Promise<Todo>;
+    await act(async () => { mutationPromise = result.current.mutateAsync(input); await new Promise<void>((resolve) => setTimeout(resolve, 0)); });
     await waitFor(() => expect(queryClient.getQueryData<Todo[]>(queryKey)).toHaveLength(1));
-    rejectCreate(new Error('offline'));
+    await act(async () => {
+      rejectCreate(new Error('offline'));
+      await flushMutation(mutationPromise);
+    });
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(queryClient.getQueryData(queryKey)).toBeUndefined();
-    queryClient.clear();
+    act(() => queryClient.clear());
   });
 });
