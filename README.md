@@ -138,9 +138,20 @@ The shared package provides the dual-mode API client and mock engine. The user a
 
 ## 6. Current Sprint Status
 
-Sprints 0–7 are implemented: planning and repository foundation, shared core, .NET BFF, user and ToDo feature packages, web shell with route composition, and final handover/reflection documentation. The web app has been typechecked and built; see [the AI journey](ai-journey/master-journey.md) for the latest verification record.
+Sprints 0–7 are implemented: planning and repository foundation, shared core, .NET BFF, user and ToDo feature packages, web shell with route composition, and final handover/reflection documentation. Sprint 8 is planned as a focused React showcase iteration; see [the sprint plan](docs/sprint-planning.md#sprint-8-react-showcase--resilient-task-lifecycle--discovery) for its reviewable scope and acceptance criteria.
 
 The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
+
+### Planned Showcase Sprint
+
+Sprint 8 will evolve the task board without changing its monorepo boundaries. Its required scope is:
+
+- optimistic task completion, editing, and deletion with deterministic Chaos Mode rollback;
+- shareable, Zod-validated URL filters for assignee, status, search, and sort;
+- query-derived dashboard insights with typed drill-down navigation; and
+- feature and browser-level verification for successful and failed mutation paths.
+
+Bulk actions with undo, draft persistence, and display preferences are explicitly stretch work. They begin only after the required scope meets its quality gate.
 
 ---
 
@@ -162,7 +173,7 @@ All project specifications, agent directives, and development roadmaps are track
 
 ---
 
-## 8. Development Roadmap (7 Sprints)
+## 8. Development Roadmap (8 Sprints)
 
 - [x] **Sprint 0:** Product Requirements, Architecture, Skills & Sprint Planning Baseline
 - [x] **Sprint 1:** Monorepo Foundation & Tooling Setup (`turbo.json`, `pnpm-workspace.yaml`, configs)
@@ -172,5 +183,6 @@ All project specifications, agent directives, and development roadmaps are track
 - [x] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
 - [x] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
 - [x] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
+- [ ] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery
 
 Performance and testing trade-offs, including current query cache settings, route loading status, and the four-layer test strategy, are documented in [docs/reflection.md](docs/reflection.md).

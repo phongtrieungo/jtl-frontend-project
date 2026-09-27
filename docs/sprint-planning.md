@@ -306,3 +306,112 @@ Each story adheres to standard agile requirements:
 - **Acceptance Criteria:**
   - **Given** `ai-journey/master-journey.md`,
   - **Then** it details the planning strategy, prompt logs, model decisions, and explicit developer overrides that shaped the final codebase.
+
+---
+
+## Sprint 8: React Showcase — Resilient Task Lifecycle & Discovery
+**Status:** Planned — pending review
+**Goal:** Extend the completed take-home into a concise interview showcase. The sprint demonstrates advanced React state management without widening the architecture: optimistic task mutations, type-safe URL-driven discovery, derived dashboard insights, and evidence-backed resilience.
+
+### Sprint Guardrails
+- This is one time-boxed showcase sprint. Core stories are required; stretch stories start only after all core acceptance criteria and tests pass.
+- `packages/todos` owns task-domain hooks, schemas, and presentational components. `apps/web` composes those exports into routes and dashboard views. `packages/users` remains independent of `packages/todos`.
+- Shared API contracts, query keys, reusable UI primitives, and cross-cutting atoms belong in `packages/shared`. No feature package performs direct HTTP calls.
+- Every write mutation preserves the established contract: cancel relevant queries, snapshot cache, optimistically update, restore the exact snapshot on error with an accessible toast, and invalidate on settlement.
+- URL search state is validated with Zod and owned by TanStack Router. Jotai remains limited to ephemeral UI state such as a bulk-selection or panel-open state; it must not duplicate task records or filters persisted in the URL.
+
+### Story 8.1: Optimistic Task Lifecycle
+- **ID:** `STORY-801`
+- **Priority:** Core
+- **User Story:**
+  *As an operator, I want to complete, rename, and delete tasks immediately so that routine work is fast while failures remain safe and understandable.*
+- **Scope & Targets:**
+  - `packages/shared/src/api/*` and shared domain contracts only where an existing task operation needs an explicit typed adapter.
+  - `packages/todos/src/hooks/useToggleTodo.ts`
+  - `packages/todos/src/hooks/useUpdateTodo.ts`
+  - `packages/todos/src/hooks/useDeleteTodo.ts`
+  - `packages/todos/src/components/TodoItemRow.tsx` and related presentation-only components.
+  - `packages/todos/src/index.ts` public exports.
+- **Acceptance Criteria:**
+  - **Given** a confirmed task, **when** its completion control is activated, **then** its status changes immediately, is temporarily non-interactive while saving, and reconciles to the canonical response when settled.
+  - **Given** a task title is edited, **when** the form is submitted, **then** Zod validation renders an inline, associated error for invalid input and an optimistic title is shown for valid input.
+  - **Given** a task is deleted, **when** the action is confirmed, **then** it immediately disappears and its original list position is restored if the request fails.
+  - **Given** Chaos Mode causes any lifecycle write to fail, **then** the exact prior query-cache snapshot is restored and a `role="alert"` toast explains the reverted action and exposes a retry path.
+  - **Given** an optimistic task is in flight, **then** conflicting task controls are disabled and its saving status remains visually and programmatically clear.
+
+### Story 8.2: Shareable Task Discovery
+- **ID:** `STORY-802`
+- **Priority:** Core
+- **User Story:**
+  *As an operator, I want to filter, search, and sort tasks through a shareable URL so that I can quickly return to or send a precise work view.*
+- **Scope & Targets:**
+  - `apps/web/src/routes/todos.tsx`
+  - `apps/web/src/components/TaskFilters.tsx`
+  - `packages/todos/src/components/TodoList.tsx` and pure filtering/sorting utilities.
+- **Acceptance Criteria:**
+  - **Given** `/todos`, **when** a user chooses an assignee, status (`all`, `active`, or `completed`), search query, or sort order, **then** the validated route search state updates without losing the other selections.
+  - **Given** a copied task-board URL, **when** it is opened in a new session, **then** the same validated filter, query, and sort view renders.
+  - **Given** a user types in search, **then** filtering is debounced, case-insensitive, and does not trigger a server write or move server data into Jotai.
+  - **Given** a query produces no matching tasks, **then** the UI distinguishes “no tasks for this user” from “no tasks match these filters” and offers a clear-filter action.
+  - **Given** all controls are used with a keyboard or screen reader, **then** labels, focus rings, selected states, and result-count announcements are available.
+
+### Story 8.3: Task Insights Dashboard
+- **ID:** `STORY-803`
+- **Priority:** Core
+- **User Story:**
+  *As an interviewer or operator, I want a concise dashboard of task progress and recent work so that the application communicates useful value at a glance.*
+- **Scope & Targets:**
+  - `apps/web/src/routes/index.tsx`
+  - `apps/web/src/components/*` dashboard-only composition components.
+  - Pure, tested derived-insight utilities in the owning package or `packages/shared` only if they are genuinely cross-domain.
+- **Acceptance Criteria:**
+  - **Given** users and tasks are available, **then** the dashboard presents total, active, completed, and completion-rate metrics plus recent tasks and users needing attention.
+  - **Given** data is loading, unavailable, or empty, **then** metric and list regions use meaningful skeleton, error, and empty states without layout shift.
+  - **Given** a dashboard insight is activated, **then** it navigates with typed links to the corresponding filtered `/todos` or user route.
+  - **Given** task data changes through an optimistic lifecycle action, **then** insights update from the Query cache without introducing a second source of truth.
+  - **Given** a visual metric conveys a status, **then** text—not color alone—communicates its meaning.
+
+### Story 8.4: Showcase Verification
+- **ID:** `STORY-804`
+- **Priority:** Core
+- **User Story:**
+  *As an evaluator, I want deterministic evidence that advanced task interactions remain correct, accessible, and resilient under failure.*
+- **Scope & Targets:**
+  - Feature-level Vitest/React Testing Library suites in `packages/todos` and `apps/web`.
+  - An end-to-end suite for the composed app (tooling to be selected during implementation).
+  - `README.md`, `docs/reflection.md`, and `ai-journey/master-journey.md` updates after delivery.
+- **Acceptance Criteria:**
+  - **Given** each create, toggle, edit, and delete mutation, **then** tests prove immediate optimistic UI/cache state, successful reconciliation, and exact rollback plus toast on failure.
+  - **Given** filters and sorting, **then** tests prove Zod-validated URL state, deep-link restoration, debounce behavior, and accessible empty states.
+  - **Given** the composed app, **then** a browser test covers selecting a user, creating a task, enabling Chaos Mode, observing the saving state, and observing rollback feedback.
+  - **Given** Sprint 8 is complete, **then** typecheck, build, real lint/boundary validation, JavaScript tests, and BFF integration tests pass in a normal local or CI environment.
+
+### Story 8.5: Bulk Actions with Undo
+- **ID:** `STORY-805`
+- **Priority:** Stretch
+- **User Story:**
+  *As an operator, I want to complete or delete multiple selected tasks and undo a recent bulk action so that repetitive work is efficient and recoverable.*
+- **Scope & Targets:**
+  - Selection controls and bulk-action UI in `packages/todos`.
+  - A minimal ephemeral selection atom only if prop composition becomes impractical; task data remains in TanStack Query.
+- **Acceptance Criteria:**
+  - **Given** multiple non-optimistic tasks are selected, **when** a bulk action is confirmed, **then** each item reports progress accessibly and partial failures restore only their own snapshots.
+  - **Given** a successful bulk action, **then** a time-bounded, keyboard-accessible undo toast is available and its behavior is tested.
+
+### Story 8.6: Resilience and Personalization Polish
+- **ID:** `STORY-806`
+- **Priority:** Stretch
+- **User Story:**
+  *As an operator, I want unfinished input and display preferences to survive a refresh so that the app feels dependable during everyday use.*
+- **Scope & Targets:**
+  - Local-only draft persistence for the task form.
+  - Light/dark/system theme and compact/comfortable density preferences.
+- **Acceptance Criteria:**
+  - **Given** a user refreshes while writing a valid task draft, **then** the draft is restored without creating a server record.
+  - **Given** a user changes theme or density, **then** the preference persists locally, honors system theme where selected, and all interactive controls retain required contrast and focus treatment.
+
+### Delivery Sequence
+1. Confirm API contract parity for toggle, update, and delete in BFF and mock modes; build the lifecycle hooks and their rollback tests.
+2. Deliver accessible task-row interactions, then complete the URL-driven filters, search, and sort experience.
+3. Compose query-derived dashboard insights and typed drill-down links.
+4. Add composed browser coverage and delivery documentation; evaluate stretch work only after the core quality gate is green.

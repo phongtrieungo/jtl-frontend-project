@@ -135,6 +135,7 @@ This document records how AI was utilized to architect, plan, and build this sol
 | **Sprint 5** | ToDo Feature Module (`packages/todos`) | User requests: “Start sprint 05”; “Write the unit test and update the README with current state of the project” | STORY-501 and STORY-502 implemented; schema/mutation tests, package typecheck/build, and diff check pass. README reflects completed Sprints 0–5 and the pending web composition work. | **Done** |
 | **Sprint 6** | Shippable Web App Shell (`apps/web`) | User request: “Start sprint 06”; implementation and verification recorded below | Responsive routed app shell, feature composition, and web typecheck/build completed. | **Done** |
 | **Sprint 7** | Reflections, AI Journey & README | User request: “start the final sprint”; documentation review and full-stack launcher implementation | README corrected, `docs/reflection.md` added, `pnpm dev:full` implemented, and this journey updated. | **Done** |
+| **Sprint 8** | React Showcase — Resilient Task Lifecycle & Discovery | User request: “update the plan for these and I will review them”; frontend coding, design, and testing guidance | Planned one time-boxed sprint: core optimistic lifecycle, URL-driven discovery, dashboard insights, and verification; bulk actions and personalization explicitly deferred as stretch scope. | **Planned** |
 
 ## Developer Override — .NET 10 Standard (2026-09-24)
 
@@ -177,3 +178,12 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 - **Story 7.2:** Added `docs/reflection.md` covering query cache freshness/retention, Jotai render scope, route loading, the four testing layers, and an ordered optimistic rollback verification flow. Explicitly recorded that feature queries currently use 30s `staleTime` (rather than the roadmap's 60s target), and route modules are currently eager, so code splitting is a follow-up opportunity.
 - **Story 7.3:** Updated this log with the prompt, planning approach, implementation decisions, and verification boundary. No developer override was needed.
 - **Verification:** `node --check scripts/dev-full.mjs` and `git diff --check` pass. No test suite was run. The full-stack launcher was not started in this turn, so its runtime behavior still needs a local .NET 10 run.
+
+### Sprint 08 — React Showcase Planning (2026-09-27)
+
+- **Prompt:** “Ok, before moving forwards, update the plan for these and I will review them”.
+- **Action:** Added Sprint 8 to the engineering roadmap as one reviewable, time-boxed showcase sprint. Core scope is optimistic task completion, editing, and deletion; Zod-validated URL-synced task discovery; query-derived dashboard insights; and deterministic feature/browser verification. Bulk actions with undo and draft/theme/density personalization are deliberately marked stretch to protect core quality.
+- **Architecture and UX constraints:** Preserved package ownership (`packages/todos` for task behavior, `apps/web` for composition), the no-sideways-import rule, TanStack Router ownership of shareable filters, Jotai only for ephemeral UI state, and full optimistic rollback with visible saving, disabled conflicting controls, inline validation, focus treatment, and accessible failure feedback.
+- **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` informed the plan’s boundary, accessibility, and verification acceptance criteria.
+- **Developer override:** The developer chose one sprint instead of several. The plan accommodates that decision by separating core delivery from explicitly non-blocking stretch stories; no implementation began in this planning step.
+- **README update:** Added the planned Sprint 8 scope and changed the roadmap to eight sprints. Removed personal React and Angular study-guide links from the project documentation index; the underlying study-guide files were intentionally left untouched.
