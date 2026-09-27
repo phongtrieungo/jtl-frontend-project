@@ -310,7 +310,7 @@ Each story adheres to standard agile requirements:
 ---
 
 ## Sprint 8: React Showcase — Resilient Task Lifecycle & Discovery
-**Status:** Core complete (2026-09-27) — Stories 8.1–8.4 and stretch Story 8.6 delivered; Story 8.5 deferred
+**Status:** Core plus Story 8.5 complete (2026-09-27) — Stories 8.1–8.5 delivered; Story 8.6 deferred
 **Goal:** Extend the completed take-home into a concise interview showcase. The sprint demonstrates advanced React state management without widening the architecture: optimistic task mutations, type-safe URL-driven discovery, derived dashboard insights, and evidence-backed resilience.
 
 ### Sprint Guardrails
@@ -393,7 +393,7 @@ Each story adheres to standard agile requirements:
 ### Story 8.5: Bulk Actions with Undo
 - **ID:** `STORY-805`
 - **Priority:** Stretch
-- **Status:** Deferred — core scope is complete
+- **Status:** Complete (2026-09-27)
 - **User Story:**
   *As an operator, I want to complete or delete multiple selected tasks and undo a recent bulk action so that repetitive work is efficient and recoverable.*
 - **Scope & Targets:**

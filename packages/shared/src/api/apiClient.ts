@@ -43,6 +43,8 @@ export interface ApiClient {
 export class DualModeApiClient implements ApiClient {
   private modePreference: ApiClientMode;
   private activeMode: 'bff' | 'mock' = 'mock';
+  private autoDetection: Promise<ApiHealthStatus> | undefined;
+  private autoResolved = false;
   private bffClient: HttpBffClient;
   private mockClient: MockDb;
   private modeListeners: Set<(mode: 'bff' | 'mock') => void> = new Set();
@@ -61,12 +63,7 @@ export class DualModeApiClient implements ApiClient {
     const envMode = (env?.VITE_API_MODE as ApiClientMode) || 'auto';
     this.modePreference = preference || envMode;
 
-    if (this.modePreference === 'mock') {
-      this.setActiveMode('mock');
-    } else {
-      // In auto or bff mode, default activeMode to bff tentatively
-      this.activeMode = 'bff';
-    }
+    this.activeMode = this.modePreference === 'bff' ? 'bff' : 'mock';
   }
 
   public getActiveMode(): 'bff' | 'mock' {
@@ -79,13 +76,12 @@ export class DualModeApiClient implements ApiClient {
 
   public setMode(mode: ApiClientMode): void {
     this.modePreference = mode;
+    this.autoDetection = undefined;
+    this.autoResolved = mode !== 'auto';
     if (mode === 'mock') {
       this.setActiveMode('mock');
     } else if (mode === 'bff') {
       this.setActiveMode('bff');
-    } else {
-      // Re-trigger auto detection
-      this.checkHealth();
     }
   }
 
@@ -105,6 +101,34 @@ export class DualModeApiClient implements ApiClient {
     }
   }
 
+  private detectAutoMode(): Promise<ApiHealthStatus> {
+    if (this.autoDetection) return this.autoDetection;
+
+    const detection = (async (): Promise<ApiHealthStatus> => {
+      try {
+        const bffHealth = await this.bffClient.checkHealth();
+        if (bffHealth.status === 'ok') {
+          this.setActiveMode('bff');
+          return bffHealth;
+        }
+      } catch {
+        // Initial auto detection selects the persistent browser mock below.
+      }
+
+      this.setActiveMode('mock');
+      return {
+        status: 'ok',
+        mode: 'mock',
+        timestamp: new Date().toISOString(),
+      };
+    })().finally(() => {
+      this.autoResolved = true;
+    });
+
+    this.autoDetection = detection;
+    return detection;
+  }
+
   public async checkHealth(): Promise<ApiHealthStatus> {
     if (this.modePreference === 'mock') {
       return {
@@ -115,93 +139,70 @@ export class DualModeApiClient implements ApiClient {
       };
     }
 
+    if (this.modePreference === 'auto') {
+      if (!this.autoResolved) return this.detectAutoMode();
+      if (this.activeMode === 'mock') {
+        return {
+          status: 'ok',
+          mode: 'mock',
+          timestamp: new Date().toISOString(),
+        };
+      }
+    }
+
     try {
       const bffHealth = await this.bffClient.checkHealth();
-
-      if (bffHealth.status === 'ok') {
-        this.setActiveMode('bff');
-        return bffHealth;
-      }
-
-      // BFF is degraded or offline; fall back gracefully to mock
-      this.setActiveMode('mock');
-      return {
-        status: 'degraded',
-        mode: 'mock',
-        timestamp: new Date().toISOString(),
-      };
+      return bffHealth;
     } catch {
-      this.setActiveMode('mock');
       return {
         status: 'offline',
-        mode: 'mock',
+        mode: 'bff',
         timestamp: new Date().toISOString(),
       };
     }
   }
 
-  /**
-   * Safe execution wrapper that transparently falls back to mockDb
-   * if a network disconnection or connection refusal occurs while talking to BFF.
-   */
-  private async executeWithFallback<T>(
+  /** Routes requests through the backend selected before application data access begins. */
+  private async executeInSelectedMode<T>(
     bffAction: () => Promise<T>,
     mockAction: () => Promise<T>
   ): Promise<T> {
+    if (this.modePreference === 'auto' && !this.autoResolved) {
+      await this.detectAutoMode();
+    }
+
     if (this.modePreference === 'mock' || this.activeMode === 'mock') {
       return mockAction();
     }
 
-    try {
-      return await bffAction();
-    } catch (err: unknown) {
-      const errorMsg = err instanceof Error ? err.message : String(err);
-
-      // Do NOT fall back on simulated chaos errors or client validation errors (HTTP 4xx/5xx)
-      // Only fall back on network failures (connection refused, fetch failed, abort)
-      const isNetworkDisconnection =
-        errorMsg.includes('Failed to fetch') ||
-        errorMsg.includes('NetworkError') ||
-        errorMsg.includes('ECONNREFUSED') ||
-        errorMsg.includes('AbortError') ||
-        errorMsg.includes('aborted');
-
-      if (isNetworkDisconnection) {
-        console.warn(
-          `[DualModeApiClient] BFF connection failed (${errorMsg}). Gracefully falling back to in-browser mock engine.`
-        );
-        this.setActiveMode('mock');
-        return mockAction();
-      }
-
-      // If it's a real server error (including chaos mode 500 error), rethrow so caller handles it!
-      throw err;
-    }
+    // Once selected, a mode stays fixed for the page session. Redirecting a
+    // failed BFF write into mock storage would create two divergent datasets.
+    return bffAction();
   }
 
   public async getUsers(): Promise<User[]> {
-    return this.executeWithFallback(
+    return this.executeInSelectedMode(
       () => this.bffClient.getUsers(),
       () => this.mockClient.getUsers()
     );
   }
 
   public async getUserById(id: string): Promise<User> {
-    return this.executeWithFallback(
+    return this.executeInSelectedMode(
       () => this.bffClient.getUserById(id),
       () => this.mockClient.getUserById(id)
     );
   }
 
   public async createUser(input: CreateUserInput): Promise<User> {
-    return this.executeWithFallback(
+    return this.executeInSelectedMode(
       () => this.bffClient.createUser(input),
       () => this.mockClient.createUser(input)
     );
   }
 
   public async getTodos(userId?: string): Promise<Todo[]> {
-    return this.executeWithFallback(
+    return this.executeInSelectedMode(
       () => this.bffClient.getTodos(userId),
       () => this.mockClient.getTodos(userId)
     );
@@ -212,7 +213,7 @@ export class DualModeApiClient implements ApiClient {
   }
 
   public async getTodoById(id: string): Promise<Todo> {
-    return this.executeWithFallback(
+    return this.executeInSelectedMode(
       () => this.bffClient.getTodoById(id),
       () => this.mockClient.getTodoById(id)
     );
@@ -222,28 +223,28 @@ export class DualModeApiClient implements ApiClient {
     input: CreateTodoInput,
     options?: { chaos?: boolean }
   ): Promise<Todo> {
-    return this.executeWithFallback(
+    return this.executeInSelectedMode(
       () => this.bffClient.createTodo(input, options),
       () => this.mockClient.createTodo(input, options)
     );
   }
 
   public async toggleTodo(id: string, options?: WriteRequestOptions): Promise<Todo> {
-    return this.executeWithFallback(
+    return this.executeInSelectedMode(
       () => this.bffClient.toggleTodo(id, options),
       () => this.mockClient.toggleTodo(id, options)
     );
   }
 
   public async updateTodo(id: string, input: UpdateTodoInput, options?: WriteRequestOptions): Promise<Todo> {
-    return this.executeWithFallback(
+    return this.executeInSelectedMode(
       () => this.bffClient.updateTodo(id, input, options),
       () => this.mockClient.updateTodo(id, input, options)
     );
   }
 
   public async deleteTodo(id: string, options?: WriteRequestOptions): Promise<void> {
-    return this.executeWithFallback(
+    return this.executeInSelectedMode(
       () => this.bffClient.deleteTodo(id, options),
       () => this.mockClient.deleteTodo(id, options)
     );

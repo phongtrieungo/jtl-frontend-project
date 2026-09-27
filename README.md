@@ -67,7 +67,7 @@
 
 | Path | Type | Status | Responsibilities |
 | :--- | :--- | :--- | :--- |
-| **`packages/shared`** | Core Library | **Complete (Sprint 2)** | Domain types, query keys (`userKeys`, `todoKeys`), dual-mode API client, in-browser mock DB, Jotai atoms (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`), and accessible UI primitives. |
+| **`packages/shared`** | Core Library | **Complete (Sprint 2)** | Domain types, query keys (`userKeys`, `todoKeys`), session-stable dual-mode API client, localStorage-backed in-browser mock DB, Jotai atoms (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`), and accessible UI primitives. |
 | **`services/bff`** | Backend Service | **Complete (Sprint 3)** | ASP.NET Core (.NET 10) Minimal API with health, user, todo, and chaos endpoints; seeded thread-safe in-memory stores; OpenAPI; latency/chaos middleware; and 24 xUnit integration tests. |
 | **`packages/users`** | Feature Module | **Complete (Sprint 4)** | Zod user validation, TanStack Query hooks, accessible user creation form, profile card, and directory; includes unit/component tests. |
 | **`packages/todos`** | Feature Module | **Complete (Sprint 5)** | Zod task validation, user-scoped query hook, optimistic create with rollback and toast feedback, accessible create form, task list and saving status; includes schema and mutation lifecycle tests. |
@@ -123,9 +123,9 @@ pnpm dev
 pnpm dev:full
 ```
 
-For separate terminals in full-stack mode, run `dotnet run --project services/bff/bff.csproj -- --urls http://localhost:5000` and `pnpm dev:web`.
+For separate terminals in full-stack mode, run `dotnet run --project services/bff/bff.csproj -- --urls http://localhost:5000` and `VITE_API_MODE=bff pnpm dev:web`.
 
-The BFF is available at `http://localhost:5000`. Its health endpoint is `/api/health`; Swagger UI is available at `/swagger` in the Development environment. `pnpm dev` runs the web app in its configured mode (automatic mode falls back to the in-browser mock when the BFF is unavailable); `pnpm dev:full` starts the BFF and web app together and stops both when either process exits. The root `pnpm test` command runs JavaScript workspace tests; `pnpm test:e2e` starts a mock-mode Vite server and executes the Playwright resilience flow; use the `dotnet test` command above for BFF coverage.
+The BFF health endpoint is `/api/health`; Swagger UI is available at `/swagger` in the Development environment. `pnpm dev` runs the web app in its configured mode: `auto` performs one startup health check, chooses BFF or mock, and keeps that choice for the page session so writes never cross between stores. Mock users and tasks persist in browser `localStorage`, including across refreshes. `pnpm dev:full` waits for Kestrel to listen on `http://localhost:5000`, then starts Vite with fixed `bff` mode; both processes stop together. The root `pnpm test` command runs JavaScript workspace tests; `pnpm test:e2e` starts a mock-mode Vite server and executes the Playwright resilience and refresh-persistence flows; use the `dotnet test` command above for BFF coverage.
 
 ---
 
@@ -144,7 +144,7 @@ The shared package provides the dual-mode API client and mock engine. The user a
 
 ## 6. Current Sprint Status
 
-Sprints 0–8 core scope is implemented. The React showcase adds optimistic create/toggle/edit/delete lifecycles, shareable discovery, query-derived dashboard insights, deterministic feature tests, a composed Playwright rollback flow, and local draft/display preference resilience. Optional bulk actions remain explicitly deferred stretch work; see [the sprint plan](docs/sprint-planning.md#sprint-8-react-showcase--resilient-task-lifecycle--discovery).
+Sprints 0–8 core scope plus Story 8.5 are implemented. The React showcase adds optimistic create/toggle/edit/delete lifecycles, shareable discovery, query-derived dashboard insights, accessible bulk actions with partial rollback and undo, deterministic feature tests, and a composed Playwright rollback flow. Personalization remains explicitly deferred stretch work; see [the sprint plan](docs/sprint-planning.md#sprint-8-react-showcase--resilient-task-lifecycle--discovery).
 
 The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
 
@@ -155,11 +155,12 @@ Sprint 8 evolved the task board without changing its monorepo boundaries. Its de
 - optimistic task completion, editing, and deletion with deterministic Chaos Mode rollback;
 - shareable, Zod-validated URL filters for assignee, status, search, and sort;
 - query-derived dashboard insights with typed drill-down navigation; and
+- accessible bulk completion/deletion with per-item progress, isolated partial rollback, and an 8-second undo action;
 - feature tests for immediate optimistic state, success reconciliation, and exact failure rollback; and
 - Playwright verification of user selection, task creation, Chaos Mode, the visible saving state, and retryable rollback feedback; and
 - per-user valid task drafts plus persisted light/dark/system theme and compact/comfortable density preferences.
 
-`pnpm lint` now performs real strict TypeScript and package-boundary validation instead of placeholder package scripts. Bulk actions with undo remain deferred stretch work.
+`pnpm lint` now performs real strict TypeScript and package-boundary validation instead of placeholder package scripts. Draft persistence and display preferences remain deferred stretch work.
 
 ---
 
@@ -191,6 +192,6 @@ All project specifications, agent directives, and development roadmaps are track
 - [x] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
 - [x] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
 - [x] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
-- [x] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery _(core Stories 8.1–8.4 complete; stretch work deferred)_
+- [x] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery _(Stories 8.1–8.5 complete; Story 8.6 deferred)_
 
 Performance and testing trade-offs, including current query cache settings, route loading status, and the four-layer test strategy, are documented in [docs/reflection.md](docs/reflection.md).

@@ -29,23 +29,17 @@ test('creates a task optimistically and rolls back a chaotic write', async ({ pa
   await expect(optimisticTask).toHaveCount(0);
 });
 
-test('restores an unfinished draft and display preferences after refresh', async ({ page }) => {
+test('persists bulk completion across a mock-mode page reload', async ({ page }) => {
   await page.goto('/todos');
   await page.getByLabel('Active user').selectOption({ label: 'Ada Lovelace' });
+  await page.getByRole('checkbox', { name: 'Select all visible tasks' }).check();
+  await page.getByRole('button', { name: 'Complete selected' }).click();
 
-  const draftTitle = 'Continue the resilient draft';
-  await page.getByLabel('Task title').fill(draftTitle);
-  await page.getByLabel('Theme').selectOption('dark');
-  await page.getByLabel('Density').selectOption('compact');
-
-  await expect(page.locator('html')).toHaveClass(/dark/);
-  await expect(page.locator('html')).toHaveAttribute('data-density', 'compact');
+  const taskList = page.getByRole('list', { name: 'Tasks' });
+  await expect(taskList.getByText('Updated')).toHaveCount(2);
   await page.reload();
 
-  await expect(page.getByLabel('Task title')).toHaveValue(draftTitle);
-  await expect(page.getByRole('listitem').filter({ hasText: draftTitle })).toHaveCount(0);
-  await expect(page.getByLabel('Theme')).toHaveValue('dark');
-  await expect(page.getByLabel('Density')).toHaveValue('compact');
-  await expect(page.locator('html')).toHaveClass(/dark/);
-  await expect(page.locator('html')).toHaveAttribute('data-density', 'compact');
+  await expect(page.getByRole('status', { name: 'Mock mode' })).toBeVisible();
+  await expect(taskList.getByText('Done')).toHaveCount(2);
+  await expect(taskList.getByText('To do')).toHaveCount(0);
 });
