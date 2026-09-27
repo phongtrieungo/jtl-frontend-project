@@ -406,7 +406,7 @@ Each story adheres to standard agile requirements:
 ### Story 8.6: Resilience and Personalization Polish
 - **ID:** `STORY-806`
 - **Priority:** Stretch
-- **Status:** Deferred — core scope is complete
+- **Status:** Complete (2026-09-27)
 - **User Story:**
   *As an operator, I want unfinished input and display preferences to survive a refresh so that the app feels dependable during everyday use.*
 - **Scope & Targets:**

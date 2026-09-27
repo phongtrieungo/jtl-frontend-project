@@ -157,7 +157,8 @@ Sprint 8 evolved the task board without changing its monorepo boundaries. Its de
 - query-derived dashboard insights with typed drill-down navigation; and
 - accessible bulk completion/deletion with per-item progress, isolated partial rollback, and an 8-second undo action;
 - feature tests for immediate optimistic state, success reconciliation, and exact failure rollback; and
-- Playwright verification of user selection, task creation, Chaos Mode, the visible saving state, and retryable rollback feedback.
+- Playwright verification of user selection, task creation, Chaos Mode, the visible saving state, and retryable rollback feedback; and
+- per-user valid task drafts plus persisted light/dark/system theme and compact/comfortable density preferences.
 
 `pnpm lint` now performs real strict TypeScript and package-boundary validation instead of placeholder package scripts. Draft persistence and display preferences remain deferred stretch work.
 

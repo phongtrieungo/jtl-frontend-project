@@ -8,6 +8,10 @@
     --color-primary-hover: theme('colors.indigo.700');
   }
 
+  :root.dark {
+    color-scheme: dark;
+  }
+
   html {
     @apply scroll-smooth;
   }
@@ -19,4 +23,44 @@
   *:focus-visible {
     @apply outline-none ring-2 ring-indigo-600 ring-offset-2;
   }
+
+  .dark *:focus-visible {
+    --tw-ring-color: theme('colors.indigo.400') !important;
+    --tw-ring-offset-color: theme('colors.slate.950') !important;
+  }
+}
+
+@layer components {
+  .dark body { @apply bg-slate-950 text-slate-100; }
+  .dark .bg-white { @apply bg-slate-900; }
+  .dark .bg-slate-50 { @apply bg-slate-950; }
+  .dark .bg-slate-100 { @apply bg-slate-800; }
+  .dark .border-slate-100 { @apply border-slate-800; }
+  .dark .border-slate-200 { @apply border-slate-700; }
+  .dark .border-slate-300 { @apply border-slate-600; }
+  .dark .text-slate-950,
+  .dark .text-slate-900 { @apply text-slate-100; }
+  .dark .text-slate-700 { @apply text-slate-200; }
+  .dark .text-slate-600 { @apply text-slate-300; }
+  .dark .text-slate-500 { @apply text-slate-400; }
+  .dark .text-indigo-600,
+  .dark .text-indigo-700 { @apply text-indigo-300; }
+  .dark .bg-indigo-50 { @apply bg-indigo-950; }
+  .dark input,
+  .dark select { @apply border-slate-600 bg-slate-900 text-slate-100; }
+  .dark .hover\:bg-slate-50:hover,
+  .dark .hover\:bg-slate-100:hover,
+  .dark .hover\:bg-slate-200:hover,
+  .dark .active\:bg-slate-100:active,
+  .dark .active\:bg-slate-200:active,
+  .dark .active\:bg-slate-300:active { @apply bg-slate-800; }
+  .dark .hover\:text-slate-900:hover { @apply text-slate-100; }
+
+  html[data-density='compact'] .app-header-inner { @apply gap-2 py-2; }
+  html[data-density='compact'] .app-main { @apply py-4; }
+  html[data-density='compact'] [class~='p-6'] { padding: 1rem; }
+  html[data-density='compact'] [class~='p-5'] { padding: 0.875rem; }
+  html[data-density='compact'] [class~='p-4'] { padding: 0.75rem; }
+  html[data-density='compact'] [class~='py-3'] { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+  html[data-density='compact'] [class~='py-2.5'] { padding-top: 0.375rem; padding-bottom: 0.375rem; }
 }

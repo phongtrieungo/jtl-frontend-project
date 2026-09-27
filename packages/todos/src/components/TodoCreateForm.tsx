@@ -2,13 +2,14 @@ import { useState, type FormEvent } from 'react';
 import { Button, Card, CardContent, CardDescription, CardHeader, CardTitle, Input } from '@todo/shared';
 import { createTodoSchema } from '../schemas/todoSchemas';
 import { useCreateTodo } from '../hooks/useCreateTodo';
+import { useTodoDraft } from '../hooks/useTodoDraft';
 
 export interface TodoCreateFormProps {
   userId: string;
 }
 
 export function TodoCreateForm({ userId }: TodoCreateFormProps) {
-  const [title, setTitle] = useState('');
+  const { title, setTitle, clearTitle } = useTodoDraft(userId);
   const [error, setError] = useState<string>();
   const createTodo = useCreateTodo();
 
@@ -22,7 +23,7 @@ export function TodoCreateForm({ userId }: TodoCreateFormProps) {
 
     setError(undefined);
     createTodo.mutate(result.data);
-    setTitle('');
+    clearTitle();
   }
 
   return (
@@ -47,6 +48,7 @@ export function TodoCreateForm({ userId }: TodoCreateFormProps) {
                 if (error) setError(undefined);
               }}
               error={error}
+              helperText="Valid unfinished drafts are saved on this device."
             />
           </div>
           <Button type="submit" isLoading={createTodo.isPending} disabled={!userId}>Create task</Button>
