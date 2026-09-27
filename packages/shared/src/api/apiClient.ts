@@ -11,6 +11,9 @@ import { mockDb, MockDb } from './mockDb';
 import { httpBffClient, HttpBffClient } from './httpBffClient';
 
 export type ApiClientMode = 'auto' | 'bff' | 'mock';
+export interface WriteRequestOptions {
+  chaos?: boolean;
+}
 
 /**
  * Standardized API Client Contract implemented by Dual-Mode Adapter.
@@ -23,9 +26,9 @@ export interface ApiClient {
   getTodosByUser(userId: string): Promise<Todo[]>;
   getTodoById(id: string): Promise<Todo>;
   createTodo(input: CreateTodoInput, options?: { chaos?: boolean }): Promise<Todo>;
-  toggleTodo(id: string): Promise<Todo>;
-  updateTodo(id: string, input: UpdateTodoInput): Promise<Todo>;
-  deleteTodo(id: string): Promise<void>;
+  toggleTodo(id: string, options?: WriteRequestOptions): Promise<Todo>;
+  updateTodo(id: string, input: UpdateTodoInput, options?: WriteRequestOptions): Promise<Todo>;
+  deleteTodo(id: string, options?: WriteRequestOptions): Promise<void>;
   checkHealth(): Promise<ApiHealthStatus>;
   getActiveMode(): 'bff' | 'mock';
   getModePreference(): ApiClientMode;
@@ -225,24 +228,24 @@ export class DualModeApiClient implements ApiClient {
     );
   }
 
-  public async toggleTodo(id: string): Promise<Todo> {
+  public async toggleTodo(id: string, options?: WriteRequestOptions): Promise<Todo> {
     return this.executeWithFallback(
-      () => this.bffClient.toggleTodo(id),
-      () => this.mockClient.toggleTodo(id)
+      () => this.bffClient.toggleTodo(id, options),
+      () => this.mockClient.toggleTodo(id, options)
     );
   }
 
-  public async updateTodo(id: string, input: UpdateTodoInput): Promise<Todo> {
+  public async updateTodo(id: string, input: UpdateTodoInput, options?: WriteRequestOptions): Promise<Todo> {
     return this.executeWithFallback(
-      () => this.bffClient.updateTodo(id, input),
-      () => this.mockClient.updateTodo(id, input)
+      () => this.bffClient.updateTodo(id, input, options),
+      () => this.mockClient.updateTodo(id, input, options)
     );
   }
 
-  public async deleteTodo(id: string): Promise<void> {
+  public async deleteTodo(id: string, options?: WriteRequestOptions): Promise<void> {
     return this.executeWithFallback(
-      () => this.bffClient.deleteTodo(id),
-      () => this.mockClient.deleteTodo(id)
+      () => this.bffClient.deleteTodo(id, options),
+      () => this.mockClient.deleteTodo(id, options)
     );
   }
 }

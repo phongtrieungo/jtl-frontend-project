@@ -208,8 +208,9 @@ export class MockDb {
   /**
    * Toggles completion status of a todo item.
    */
-  public async toggleTodo(id: string): Promise<Todo> {
+  public async toggleTodo(id: string, options?: { chaos?: boolean }): Promise<Todo> {
     await this.delay();
+    if (options?.chaos) throw new Error('Simulated Network Failure: Chaos Mode Active');
     const index = this.todos.findIndex((t) => t.id === id);
     if (index === -1) {
       throw new Error(`Todo with ID '${id}' not found`);
@@ -227,8 +228,9 @@ export class MockDb {
   /**
    * Updates an existing todo item fields.
    */
-  public async updateTodo(id: string, input: UpdateTodoInput): Promise<Todo> {
+  public async updateTodo(id: string, input: UpdateTodoInput, options?: { chaos?: boolean }): Promise<Todo> {
     await this.delay();
+    if (options?.chaos) throw new Error('Simulated Network Failure: Chaos Mode Active');
     const index = this.todos.findIndex((t) => t.id === id);
     if (index === -1) {
       throw new Error(`Todo with ID '${id}' not found`);
@@ -248,8 +250,9 @@ export class MockDb {
   /**
    * Deletes a todo item.
    */
-  public async deleteTodo(id: string): Promise<void> {
+  public async deleteTodo(id: string, options?: { chaos?: boolean }): Promise<void> {
     await this.delay();
+    if (options?.chaos) throw new Error('Simulated Network Failure: Chaos Mode Active');
     const index = this.todos.findIndex((t) => t.id === id);
     if (index === -1) {
       throw new Error(`Todo with ID '${id}' not found`);

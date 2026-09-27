@@ -31,6 +31,7 @@ export {
   createApiClient,
   type ApiClient,
   type ApiClientMode,
+  type WriteRequestOptions,
 } from './api/apiClient';
 
 export {

@@ -151,29 +151,31 @@ export class HttpBffClient {
     return this.handleResponse<Todo>(response);
   }
 
-  public async toggleTodo(id: string): Promise<Todo> {
+  public async toggleTodo(id: string, options?: { chaos?: boolean }): Promise<Todo> {
     const response = await this.fetchWithTimeout(`${this.baseUrl}/todos/${id}/toggle`, {
       method: 'PUT',
-      headers: { Accept: 'application/json' },
+      headers: options?.chaos ? { Accept: 'application/json', 'X-Simulate-Chaos': 'true' } : { Accept: 'application/json' },
     });
     return this.handleResponse<Todo>(response);
   }
 
-  public async updateTodo(id: string, input: UpdateTodoInput): Promise<Todo> {
+  public async updateTodo(id: string, input: UpdateTodoInput, options?: { chaos?: boolean }): Promise<Todo> {
     const response = await this.fetchWithTimeout(`${this.baseUrl}/todos/${id}`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
+        ...(options?.chaos ? { 'X-Simulate-Chaos': 'true' } : {}),
       },
       body: JSON.stringify(input),
     });
     return this.handleResponse<Todo>(response);
   }
 
-  public async deleteTodo(id: string): Promise<void> {
+  public async deleteTodo(id: string, options?: { chaos?: boolean }): Promise<void> {
     const response = await this.fetchWithTimeout(`${this.baseUrl}/todos/${id}`, {
       method: 'DELETE',
+      headers: options?.chaos ? { 'X-Simulate-Chaos': 'true' } : undefined,
     });
     return this.handleResponse<void>(response);
   }

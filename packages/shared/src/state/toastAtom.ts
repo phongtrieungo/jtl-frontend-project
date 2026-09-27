@@ -10,6 +10,7 @@ export interface Toast {
   title?: string;
   message: string;
   durationMs?: number;
+  action?: { label: string; onAction: () => void };
 }
 
 export interface ToastOptions {
@@ -17,6 +18,7 @@ export interface ToastOptions {
   title?: string;
   message: string;
   durationMs?: number;
+  action?: { label: string; onAction: () => void };
 }
 
 /**
@@ -54,8 +56,9 @@ export function useToast() {
         id,
         type: opts.type ?? 'info',
         title: opts.title,
-        message: opts.message,
-        durationMs,
+      message: opts.message,
+      durationMs,
+      action: opts.action,
       };
 
       setToasts((current) => [...current, newToast]);

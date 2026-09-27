@@ -135,7 +135,7 @@ This document records how AI was utilized to architect, plan, and build this sol
 | **Sprint 5** | ToDo Feature Module (`packages/todos`) | User requests: “Start sprint 05”; “Write the unit test and update the README with current state of the project” | STORY-501 and STORY-502 implemented; schema/mutation tests, package typecheck/build, and diff check pass. README reflects completed Sprints 0–5 and the pending web composition work. | **Done** |
 | **Sprint 6** | Shippable Web App Shell (`apps/web`) | User request: “Start sprint 06”; implementation and verification recorded below | Responsive routed app shell, feature composition, and web typecheck/build completed. | **Done** |
 | **Sprint 7** | Reflections, AI Journey & README | User request: “start the final sprint”; documentation review and full-stack launcher implementation | README corrected, `docs/reflection.md` added, `pnpm dev:full` implemented, and this journey updated. | **Done** |
-| **Sprint 8** | React Showcase — Resilient Task Lifecycle & Discovery | User request: “update the plan for these and I will review them”; frontend coding, design, and testing guidance | Planned one time-boxed sprint: core optimistic lifecycle, URL-driven discovery, dashboard insights, and verification; bulk actions and personalization explicitly deferred as stretch scope. | **Planned** |
+| **Sprint 8** | React Showcase — Resilient Task Lifecycle & Discovery | User request: “update the plan for these and I will review them”; later “Start sprint 08”; frontend coding, design, and testing guidance | Story 8.1 lifecycle mutations, accessible row interactions, rollback retry actions, and deterministic tests are complete. URL discovery, dashboard insights, and composed verification remain. | **In progress** |
 
 ## Developer Override — .NET 10 Standard (2026-09-24)
 
@@ -187,3 +187,11 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 - **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` informed the plan’s boundary, accessibility, and verification acceptance criteria.
 - **Developer override:** The developer chose one sprint instead of several. The plan accommodates that decision by separating core delivery from explicitly non-blocking stretch stories; no implementation began in this planning step.
 - **README update:** Added the planned Sprint 8 scope and changed the roadmap to eight sprints. Removed personal React and Angular study-guide links from the project documentation index; the underlying study-guide files were intentionally left untouched.
+
+### Sprint 08 — Story 8.1: Optimistic Task Lifecycle (2026-09-27)
+
+- **Prompt:** “Start sprint 08”.
+- **Action:** Started core implementation with typed shared API write options so Chaos Mode reaches mock and BFF toggle, update, and delete requests. Added isolated `useToggleTodo`, `useUpdateTodo`, and `useDeleteTodo` hooks, each canceling queries, snapshotting the owning per-user cache, updating optimistically, restoring the exact snapshot on failure, and invalidating after settlement. The existing create mutation now has the same retryable rollback feedback.
+- **UI and accessibility:** Extended task rows with accessible status controls, a Zod-validated inline title editor, explicit inline delete confirmation, disabled conflicting controls while saving, and a programmatic “Saving…” state. Toasts now support a keyboard-accessible retry action for reverted writes.
+- **Verification:** Added lifecycle hook tests for immediate toggle/update/delete effects, settled invalidation, exact rollback including original delete position, and retryable error toasts. `pnpm --filter @todo/todos test` (9 tests), `build`, `pnpm --filter @todo/shared test` (29 tests), `typecheck`, and `git diff --check` pass.
+- **Status:** Story 8.1 is implemented; Sprint 8 remains in progress pending Stories 8.2–8.4. Existing untracked study-guide documents were preserved.
