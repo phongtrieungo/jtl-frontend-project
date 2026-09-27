@@ -115,13 +115,14 @@ export interface ApiClient {
 
 ### 3.1 Dual-Mode Resolution Strategy
 1. **Mode Detection:**
-   - If `VITE_API_MODE === 'bff'`, the client targets `http://localhost:5000/api`.
+   - If `VITE_API_MODE === 'bff'`, the client targets the configured BFF URL and does not redirect failed writes into mock storage.
    - If `VITE_API_MODE === 'mock'`, the client routes directly to the in-browser mock engine.
-2. **Graceful Fallback:**
-   - If configured for `bff` but `http://localhost:5000/api/health` fails to respond, the client automatically switches to the in-browser mock engine and triggers an informational toast: *"BFF offline — running in in-browser mock mode"*.
+   - If `VITE_API_MODE === 'auto'`, the client deduplicates one startup health check and selects BFF or mock for the lifetime of the page. It does not switch stores after queries or mutations begin.
+2. **Mock Durability:**
+   - The browser mock persists validated users and tasks under the versioned `taskwell.mock-db.v1` `localStorage` key. Successful create, update, toggle, and delete operations survive a page refresh; corrupt or incompatible payloads safely reset to the seed dataset.
 3. **Execution Commands:**
-   - `pnpm dev`: Runs the frontend with in-browser mock (zero prerequisite setup).
-   - `pnpm dev:full`: Runs both the Vite frontend and .NET 10 BFF concurrently via Turborepo.
+   - `pnpm dev`: Runs the frontend with startup auto-detection (zero prerequisite setup when the BFF is absent).
+   - `pnpm dev:full`: Starts the .NET 10 BFF first, waits until Kestrel is listening, and then starts Vite in fixed BFF mode.
 
 ---
 
@@ -221,7 +222,7 @@ Located in `apps/web/src/routes`:
 | :--- | :--- | :--- | :--- |
 | **BFF Framework** | Node.js Express / NestJS | **ASP.NET Core (.NET 10) Minimal API** | Clean, fast, lightweight HTTP service with built-in dependency injection and Swagger, cleanly isolating backend logic. |
 | **BFF Location** | `apps/bff` | **`services/bff`** | Clear conceptual distinction: `apps/` is reserved for shippable web client applications; `services/` contains backend services. |
-| **Reviewer Resilience** | Require .NET SDK | **Dual-Mode Adapter with Auto-Fallback** | Evaluators without .NET installed can run `pnpm dev` immediately using the in-browser mock engine; evaluators with .NET can run full-stack `pnpm dev:full`. |
+| **Reviewer Resilience** | Require .NET SDK | **Dual-Mode Adapter with Stable Startup Selection** | Evaluators without .NET can run a persistent browser mock; full-stack startup waits for the BFF. A selected page session never redirects writes between independent stores. |
 | **BFF Storage** | SQLite / EF Core | **In-Memory `ConcurrentDictionary`** | Eliminates database migration steps, file permission errors, and external database dependencies while remaining thread-safe. |
 | **Monorepo Tooling** | Nx, Lerna | **Turborepo** | Minimal overhead, zero-config pipelines (`build`, `lint`, `dev`), perfectly matches take-home requirements. |
 | **Server State** | Redux Toolkit | **TanStack Query v5** | Industry standard for asynchronous server state, built-in cancellation, standard `onMutate` rollback mechanics. |

@@ -11,6 +11,12 @@ export { useTodosByUser } from './hooks/useTodosByUser';
 export { useToggleTodo, type ToggleTodoInput } from './hooks/useToggleTodo';
 export { useUpdateTodo, type UpdateTodoMutationInput } from './hooks/useUpdateTodo';
 export { useDeleteTodo, type DeleteTodoInput } from './hooks/useDeleteTodo';
+export {
+  useBulkTodoActions,
+  type BulkTodoAction,
+  type BulkTodoActionsResult,
+  type BulkTodoItemStatus,
+} from './hooks/useBulkTodoActions';
 export { TodoCreateForm, type TodoCreateFormProps } from './components/TodoCreateForm';
 export { TodoList, type TodoListProps } from './components/TodoList';
 export { TodoItemRow, type TodoItemRowProps } from './components/TodoItemRow';

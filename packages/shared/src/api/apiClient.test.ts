@@ -9,6 +9,7 @@ describe('Story 2.2: DualModeApiClient Adapter & Fallback', () => {
   let mockBff: HttpBffClient;
 
   beforeEach(() => {
+    localStorage.clear();
     mockDb = new MockDb();
     mockBff = new HttpBffClient();
   });
@@ -25,19 +26,39 @@ describe('Story 2.2: DualModeApiClient Adapter & Fallback', () => {
     expect(health.status).toBe('ok');
   });
 
-  it('transparently falls back to mock engine when BFF fetch fails with connection error', async () => {
-    // Stub BFF client to simulate connection refusal / network failure
-    vi.spyOn(mockBff, 'getUsers').mockRejectedValueOnce(
-      new Error('Failed to fetch: Connection refused')
-    );
-
-    const client = new DualModeApiClient('bff', mockBff, mockDb);
-    expect(client.getActiveMode()).toBe('bff');
+  it('selects mock once when initial auto detection cannot reach the BFF', async () => {
+    const health = vi.spyOn(mockBff, 'checkHealth')
+      .mockRejectedValueOnce(new Error('Failed to fetch: Connection refused'))
+      .mockResolvedValue({ status: 'ok', mode: 'bff', timestamp: new Date().toISOString() });
+    const client = new DualModeApiClient('auto', mockBff, mockDb);
 
     const users = await client.getUsers();
-    // Fallback should yield mock users and switch active mode to mock
     expect(users.length).toBeGreaterThan(0);
     expect(client.getActiveMode()).toBe('mock');
+
+    const laterHealth = await client.checkHealth();
+    expect(laterHealth.mode).toBe('mock');
+    expect(health).toHaveBeenCalledTimes(1);
+  });
+
+  it('keeps explicit BFF mode fixed instead of redirecting a failed request to mock data', async () => {
+    vi.spyOn(mockBff, 'getUsers').mockRejectedValueOnce(new Error('Failed to fetch: Connection refused'));
+    const mockRead = vi.spyOn(mockDb, 'getUsers');
+    const client = new DualModeApiClient('bff', mockBff, mockDb);
+
+    await expect(client.getUsers()).rejects.toThrow('Failed to fetch');
+    expect(client.getActiveMode()).toBe('bff');
+    expect(mockRead).not.toHaveBeenCalled();
+  });
+
+  it('selects BFF once when initial auto detection succeeds', async () => {
+    vi.spyOn(mockBff, 'checkHealth').mockResolvedValue({ status: 'ok', mode: 'bff', timestamp: new Date().toISOString() });
+    const getUsers = vi.spyOn(mockBff, 'getUsers').mockResolvedValue([]);
+    const client = new DualModeApiClient('auto', mockBff, mockDb);
+
+    await client.getUsers();
+    expect(client.getActiveMode()).toBe('bff');
+    expect(getUsers).toHaveBeenCalledOnce();
   });
 
   it('notifies mode listeners when active mode changes', async () => {

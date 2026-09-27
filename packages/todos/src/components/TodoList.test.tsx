@@ -1,9 +1,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import '@testing-library/jest-dom/vitest';
-import { fireEvent, render, screen } from '@testing-library/react';
-import { todoKeys, type Todo } from '@todo/shared';
+import { act, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { apiClient, todoKeys, toastsAtom, type Todo } from '@todo/shared';
+import { getDefaultStore } from 'jotai/vanilla';
 import type { ComponentProps } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 import { TodoList } from './TodoList';
 
 const userId = 'user-1';
@@ -25,6 +26,11 @@ function renderList(todos: Todo[], props: Partial<ComponentProps<typeof TodoList
 }
 
 describe('TodoList discovery states', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    act(() => getDefaultStore().set(toastsAtom, []));
+  });
+
   it('explains when the selected user has no tasks', () => {
     renderList([]);
     expect(screen.getByRole('heading', { name: 'No tasks for this user' })).toBeInTheDocument();
@@ -47,5 +53,37 @@ describe('TodoList discovery states', () => {
     expect(screen.getByRole('heading', { name: 'No tasks match these filters' })).toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Clear filters' }));
     expect(onClearFilters).toHaveBeenCalledOnce();
+  });
+
+  it('supports labelled multi-selection and explicit bulk-delete confirmation', () => {
+    renderList([
+      { id: 'todo-1', title: 'Write engine notes', assigneeId: userId, completed: false, createdAt: '2026-09-27T00:00:00.000Z' },
+      { id: 'todo-2', title: 'Review demo', assigneeId: userId, completed: false, createdAt: '2026-09-26T00:00:00.000Z' },
+    ]);
+
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Select all visible tasks' }));
+    expect(screen.getByText('2 selected')).toHaveAttribute('role', 'status');
+    expect(screen.getByRole('button', { name: 'Complete selected' })).toBeEnabled();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Delete selected' }));
+    expect(screen.getByRole('group', { name: 'Confirm deletion of 2 selected tasks' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Confirm bulk delete' })).toBeEnabled();
+  });
+
+  it('announces each selected task progress during a bulk action', async () => {
+    const todo = { id: 'todo-1', title: 'Write engine notes', assigneeId: userId, completed: false, createdAt: '2026-09-27T00:00:00.000Z' };
+    let resolveUpdate!: (todo: Todo) => void;
+    vi.spyOn(apiClient, 'updateTodo').mockReturnValue(new Promise<Todo>((resolve) => { resolveUpdate = resolve; }));
+    vi.spyOn(apiClient, 'getTodosByUser').mockResolvedValue([{ ...todo, completed: true }]);
+    renderList([todo]);
+
+    fireEvent.click(screen.getByRole('checkbox', { name: `Select ${todo.title}` }));
+    fireEvent.click(screen.getByRole('button', { name: 'Complete selected' }));
+
+    await waitFor(() => expect(screen.getByText(`${todo.title}: updating.`)).toBeInTheDocument());
+    expect(screen.getByText('Updating...')).toBeInTheDocument();
+
+    act(() => resolveUpdate({ ...todo, completed: true }));
+    await waitFor(() => expect(screen.getByText(`${todo.title}: updated.`)).toBeInTheDocument());
   });
 });

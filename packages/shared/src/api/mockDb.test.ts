@@ -1,11 +1,12 @@
 // packages/shared/src/api/mockDb.test.ts
 import { describe, it, expect, beforeEach } from 'vitest';
-import { MockDb, INITIAL_USERS, INITIAL_TODOS } from './mockDb';
+import { MockDb, INITIAL_USERS, INITIAL_TODOS, MOCK_DB_STORAGE_KEY } from './mockDb';
 
 describe('Story 2.2: In-Browser Mock Database Engine', () => {
   let db: MockDb;
 
   beforeEach(() => {
+    localStorage.clear();
     db = new MockDb();
   });
 
@@ -99,5 +100,24 @@ describe('Story 2.2: In-Browser Mock Database Engine', () => {
     expect(users.length).toBe(INITIAL_USERS.length);
     const todo1 = await db.getTodoById('todo-1');
     expect(todo1).toBeDefined();
+  });
+
+  it('hydrates users and task updates from browser storage after a page reload', async () => {
+    const createdUser = await db.createUser({ username: 'Grace Hopper' });
+    const completed = await db.updateTodo('todo-2', { completed: true });
+    expect(completed.completed).toBe(true);
+    expect(localStorage.getItem(MOCK_DB_STORAGE_KEY)).not.toBeNull();
+
+    const reloadedDb = new MockDb();
+    expect((await reloadedDb.getUserById(createdUser.id)).username).toBe('Grace Hopper');
+    expect((await reloadedDb.getTodoById('todo-2')).completed).toBe(true);
+  });
+
+  it('replaces invalid persisted data with the initial seed', async () => {
+    localStorage.setItem(MOCK_DB_STORAGE_KEY, '{"version":1,"users":"invalid"}');
+    const recoveredDb = new MockDb();
+
+    expect((await recoveredDb.getUsers()).length).toBe(INITIAL_USERS.length);
+    expect((await recoveredDb.getTodos()).length).toBe(INITIAL_TODOS.length);
   });
 });
