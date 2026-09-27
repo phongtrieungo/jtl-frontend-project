@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Badge, Button, Card, CardContent, Input, type Todo } from '@todo/shared';
 import { updateTodoSchema } from '../schemas/todoSchemas';
+import type { BulkTodoItemStatus } from '../hooks/useBulkTodoActions';
 
 export interface TodoItemRowProps {
   todo: Todo;
@@ -8,14 +9,17 @@ export interface TodoItemRowProps {
   onToggle?: (todo: Todo) => void;
   onUpdate?: (todo: Todo, title: string) => void;
   onDelete?: (todo: Todo) => void;
+  isSelected?: boolean;
+  onSelectedChange?: (todo: Todo, selected: boolean) => void;
+  bulkStatus?: BulkTodoItemStatus;
 }
 
-export function TodoItemRow({ todo, isSaving = false, onToggle, onUpdate, onDelete }: TodoItemRowProps) {
+export function TodoItemRow({ todo, isSaving = false, onToggle, onUpdate, onDelete, isSelected = false, onSelectedChange, bulkStatus }: TodoItemRowProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isConfirmingDelete, setIsConfirmingDelete] = useState(false);
   const [title, setTitle] = useState(todo.title);
   const [error, setError] = useState<string>();
-  const isLocked = Boolean(todo.isOptimistic) || isSaving;
+  const isLocked = Boolean(todo.isOptimistic) || isSaving || bulkStatus === 'pending';
 
   const submitEdit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -43,11 +47,25 @@ export function TodoItemRow({ todo, isSaving = false, onToggle, onUpdate, onDele
             </form>
           ) : (
             <div className="flex items-start justify-between gap-3">
-              <div className="min-w-0">
+              <div className="flex min-w-0 items-start gap-3">
+                {onSelectedChange ? <input
+                  id={`select-todo-${todo.id}`}
+                  type="checkbox"
+                  checked={isSelected}
+                  disabled={isLocked}
+                  aria-label={`Select ${todo.title}`}
+                  className="mt-1 h-4 w-4 rounded border-slate-300 text-indigo-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 disabled:cursor-not-allowed"
+                  onChange={(event) => onSelectedChange(todo, event.target.checked)}
+                /> : null}
+                <div className="min-w-0">
                 <p className={`truncate font-medium ${todo.completed ? 'text-slate-500 line-through' : 'text-slate-900'}`}>{todo.title}</p>
                 <p className="mt-1 text-xs text-slate-500">{todo.completed ? 'Completed' : 'Pending'}</p>
+                </div>
               </div>
-              {isLocked ? <Badge variant="amber" pulse dot>Saving...</Badge> : <Badge variant={todo.completed ? 'emerald' : 'slate'}>{todo.completed ? 'Done' : 'To do'}</Badge>}
+              {isLocked ? <Badge variant="amber" pulse dot>{bulkStatus === 'pending' ? 'Updating...' : 'Saving...'}</Badge>
+                : bulkStatus === 'failed' ? <Badge variant="rose">Reverted</Badge>
+                  : bulkStatus === 'succeeded' ? <Badge variant="emerald">Updated</Badge>
+                    : <Badge variant={todo.completed ? 'emerald' : 'slate'}>{todo.completed ? 'Done' : 'To do'}</Badge>}
             </div>
           )}
           {!isEditing && !todo.isOptimistic ? (

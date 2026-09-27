@@ -4,7 +4,7 @@
 
 ### Query caching
 
-TanStack Query owns server state, so user and task data is reused across components without mirroring it into Jotai. The user list, user detail, and per-user task queries currently use a 30 second `staleTime` and a 300 second `gcTime`. Fresh data avoids an immediate refetch; inactive data remains available for five minutes before garbage collection. Mutations invalidate the relevant key so the next read reconciles with the API. The backend health badge polls every 15 seconds and uses a 10 second stale window.
+TanStack Query owns server state, so user and task data is reused across components without mirroring it into Jotai. The user list, user detail, and per-user task queries currently use a 30 second `staleTime` and a 300 second `gcTime`. Fresh data avoids an immediate refetch; inactive data remains available for five minutes before garbage collection. Mutations invalidate the relevant key so the next read reconciles with the API. The backend health badge polls every 15 seconds and uses a 10 second stale window. Backend selection is stable for a page session: automatic mode chooses once at startup, explicit BFF mode surfaces an outage instead of silently writing to a different mock dataset, and mock records are persisted in versioned browser `localStorage` so refresh reconciliation remains durable.
 
 These values are deliberate starting points for a small interactive app, not measured production optima. A production deployment should tune freshness against data update frequency and network cost, and observe request volume and cache hit rates before changing them. The roadmap's earlier 60 second stale target has not been applied; current feature hooks use 30 seconds.
 

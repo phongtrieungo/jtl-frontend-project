@@ -28,3 +28,18 @@ test('creates a task optimistically and rolls back a chaotic write', async ({ pa
   await expect(rollbackAlert.getByRole('button', { name: 'Try again' })).toBeVisible();
   await expect(optimisticTask).toHaveCount(0);
 });
+
+test('persists bulk completion across a mock-mode page reload', async ({ page }) => {
+  await page.goto('/todos');
+  await page.getByLabel('Active user').selectOption({ label: 'Ada Lovelace' });
+  await page.getByRole('checkbox', { name: 'Select all visible tasks' }).check();
+  await page.getByRole('button', { name: 'Complete selected' }).click();
+
+  const taskList = page.getByRole('list', { name: 'Tasks' });
+  await expect(taskList.getByText('Updated')).toHaveCount(2);
+  await page.reload();
+
+  await expect(page.getByRole('status', { name: 'Mock mode' })).toBeVisible();
+  await expect(taskList.getByText('Done')).toHaveCount(2);
+  await expect(taskList.getByText('To do')).toHaveCount(0);
+});

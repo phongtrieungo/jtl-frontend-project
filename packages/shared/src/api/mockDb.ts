@@ -70,6 +70,46 @@ export const INITIAL_TODOS: readonly Todo[] = [
   },
 ];
 
+export const MOCK_DB_STORAGE_KEY = 'taskwell.mock-db.v1';
+
+interface MockDbStorage {
+  getItem(key: string): string | null;
+  setItem(key: string, value: string): void;
+  removeItem(key: string): void;
+}
+
+interface PersistedMockDb {
+  version: 1;
+  users: User[];
+  todos: Todo[];
+}
+
+function isPersistedUser(value: unknown): value is User {
+  if (!value || typeof value !== 'object') return false;
+  const user = value as Partial<User>;
+  return typeof user.id === 'string'
+    && typeof user.username === 'string'
+    && typeof user.createdAt === 'string';
+}
+
+function isPersistedTodo(value: unknown): value is Todo {
+  if (!value || typeof value !== 'object') return false;
+  const todo = value as Partial<Todo>;
+  return typeof todo.id === 'string'
+    && typeof todo.title === 'string'
+    && typeof todo.assigneeId === 'string'
+    && typeof todo.completed === 'boolean'
+    && typeof todo.createdAt === 'string';
+}
+
+function resolveBrowserStorage(): MockDbStorage | undefined {
+  try {
+    return globalThis.localStorage;
+  } catch {
+    return undefined;
+  }
+}
+
 /**
  * In-Browser Mock Database Engine.
  * Provides complete zero-dependency offline functionality and chaos simulation.
@@ -77,11 +117,56 @@ export const INITIAL_TODOS: readonly Todo[] = [
 export class MockDb {
   private users: User[] = [];
   private todos: Todo[] = [];
+  private readonly storage: MockDbStorage | undefined;
   private defaultMinLatency = 200;
   private defaultMaxLatency = 400;
 
-  constructor() {
-    this.reset();
+  constructor(storage: MockDbStorage | undefined = resolveBrowserStorage()) {
+    this.storage = storage;
+    if (!this.hydrate()) this.reset();
+  }
+
+  private clearPersisted(): void {
+    try {
+      this.storage?.removeItem(MOCK_DB_STORAGE_KEY);
+    } catch {
+      // Storage access can be denied; initialization will still use seed data.
+    }
+  }
+
+  private hydrate(): boolean {
+    try {
+      const raw = this.storage?.getItem(MOCK_DB_STORAGE_KEY);
+      if (!raw) return false;
+      const persisted = JSON.parse(raw) as Partial<PersistedMockDb>;
+      if (persisted.version !== 1
+        || !Array.isArray(persisted.users)
+        || !persisted.users.every(isPersistedUser)
+        || !Array.isArray(persisted.todos)
+        || !persisted.todos.every(isPersistedTodo)) {
+        this.clearPersisted();
+        return false;
+      }
+      this.users = persisted.users.map((user) => ({ ...user }));
+      this.todos = persisted.todos.map((todo) => ({ ...todo, isOptimistic: undefined }));
+      return true;
+    } catch {
+      this.clearPersisted();
+      return false;
+    }
+  }
+
+  private persist(): void {
+    try {
+      const state: PersistedMockDb = {
+        version: 1,
+        users: this.users.map((user) => ({ ...user, taskCount: undefined })),
+        todos: this.todos.map((todo) => ({ ...todo, isOptimistic: undefined })),
+      };
+      this.storage?.setItem(MOCK_DB_STORAGE_KEY, JSON.stringify(state));
+    } catch {
+      // Storage can be unavailable or full. The in-memory mock remains usable.
+    }
   }
 
   /**
@@ -90,6 +175,7 @@ export class MockDb {
   public reset(): void {
     this.users = INITIAL_USERS.map((u) => ({ ...u }));
     this.todos = INITIAL_TODOS.map((t) => ({ ...t }));
+    this.persist();
   }
 
   /**
@@ -144,6 +230,7 @@ export class MockDb {
     };
 
     this.users.unshift(newUser);
+    this.persist();
     return { ...newUser };
   }
 
@@ -202,6 +289,7 @@ export class MockDb {
     };
 
     this.todos.unshift(newTodo);
+    this.persist();
     return { ...newTodo };
   }
 
@@ -222,6 +310,7 @@ export class MockDb {
       completed: !current.completed,
     };
     this.todos[index] = updated;
+    this.persist();
     return { ...updated };
   }
 
@@ -244,6 +333,7 @@ export class MockDb {
       ...(input.assigneeId !== undefined ? { assigneeId: input.assigneeId } : {}),
     };
     this.todos[index] = updated;
+    this.persist();
     return { ...updated };
   }
 
@@ -258,6 +348,7 @@ export class MockDb {
       throw new Error(`Todo with ID '${id}' not found`);
     }
     this.todos.splice(index, 1);
+    this.persist();
   }
 }
 
