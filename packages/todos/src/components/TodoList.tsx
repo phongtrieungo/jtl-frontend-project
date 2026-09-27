@@ -1,6 +1,9 @@
 import { Button, Card, CardContent, Spinner } from '@todo/shared';
 import { useTodosByUser } from '../hooks/useTodosByUser';
 import { TodoItemRow } from './TodoItemRow';
+import { useToggleTodo } from '../hooks/useToggleTodo';
+import { useUpdateTodo } from '../hooks/useUpdateTodo';
+import { useDeleteTodo } from '../hooks/useDeleteTodo';
 
 export interface TodoListProps {
   userId: string;
@@ -8,6 +11,9 @@ export interface TodoListProps {
 
 export function TodoList({ userId }: TodoListProps) {
   const { data: todos, isPending, isError, error, refetch } = useTodosByUser(userId);
+  const toggleTodo = useToggleTodo();
+  const updateTodo = useUpdateTodo();
+  const deleteTodo = useDeleteTodo();
 
   if (!userId) return <p className="rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">Select a user to view and create tasks.</p>;
   if (isPending) return <div role="status" className="flex justify-center p-8"><Spinner label="Loading tasks" /></div>;
@@ -19,5 +25,10 @@ export function TodoList({ userId }: TodoListProps) {
     </CardContent></Card>;
   }
 
-  return <ul aria-label="Tasks" aria-live="polite" className="space-y-3">{todos.map((todo) => <TodoItemRow key={todo.id} todo={todo} />)}</ul>;
+  return <ul aria-label="Tasks" aria-live="polite" className="space-y-3">{todos.map((todo) => {
+    const isSaving = (toggleTodo.isPending && toggleTodo.variables?.todo.id === todo.id)
+      || (updateTodo.isPending && updateTodo.variables?.todo.id === todo.id)
+      || (deleteTodo.isPending && deleteTodo.variables?.todo.id === todo.id);
+    return <TodoItemRow key={todo.id} todo={todo} isSaving={isSaving} onToggle={(item) => toggleTodo.mutate({ todo: item })} onUpdate={(item, title) => updateTodo.mutate({ todo: item, changes: { title } })} onDelete={(item) => deleteTodo.mutate({ todo: item })} />;
+  })}</ul>;
 }

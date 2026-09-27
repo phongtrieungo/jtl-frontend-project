@@ -13,7 +13,7 @@ export function useCreateTodo() {
   const isChaosActive = useAtomValue(isChaosActiveAtom);
   const toast = useToast();
 
-  return useMutation<Todo, Error, CreateTodoInput, CreateTodoContext>({
+  const mutation = useMutation<Todo, Error, CreateTodoInput, CreateTodoContext>({
     mutationFn: (input) => apiClient.createTodo(input, { chaos: isChaosActive }),
     onMutate: async (input) => {
       const queryKey = todoKeys.byUser(input.assigneeId);
@@ -39,10 +39,16 @@ export function useCreateTodo() {
           queryClient.setQueryData(context.queryKey, context.previousTodos);
         }
       }
-      toast.error(`Unable to save task “${input.title}”. ${error.message} Your changes were reverted.`, 'Task not saved');
+      toast.toast({
+        type: 'error',
+        title: 'Task not saved',
+        message: `Unable to save task “${input.title}”. ${error.message} Your changes were reverted.`,
+        action: { label: 'Try again', onAction: () => { void mutation.mutateAsync(input).catch(() => undefined); } },
+      });
     },
     onSettled: async (_data, _error, input) => {
       await queryClient.invalidateQueries({ queryKey: todoKeys.byUser(input.assigneeId) });
     },
   });
+  return mutation;
 }

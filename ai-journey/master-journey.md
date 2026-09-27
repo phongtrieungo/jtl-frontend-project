@@ -187,3 +187,11 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 - **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` informed the plan’s boundary, accessibility, and verification acceptance criteria.
 - **Developer override:** The developer chose one sprint instead of several. The plan accommodates that decision by separating core delivery from explicitly non-blocking stretch stories; no implementation began in this planning step.
 - **README update:** Added the planned Sprint 8 scope and changed the roadmap to eight sprints. Removed personal React and Angular study-guide links from the project documentation index; the underlying study-guide files were intentionally left untouched.
+
+### Sprint 08 — Story 8.1: Optimistic Task Lifecycle (2026-09-27)
+
+- **Prompt:** “Start sprint 08”.
+- **Action:** Started core implementation with typed shared API write options so Chaos Mode reaches mock and BFF toggle, update, and delete requests. Added isolated `useToggleTodo`, `useUpdateTodo`, and `useDeleteTodo` hooks, each canceling queries, snapshotting the owning per-user cache, updating optimistically, restoring the exact snapshot on failure, and invalidating after settlement. The existing create mutation now has the same retryable rollback feedback.
+- **UI and accessibility:** Extended task rows with accessible status controls, a Zod-validated inline title editor, explicit inline delete confirmation, disabled conflicting controls while saving, and a programmatic “Saving…” state. Toasts now support a keyboard-accessible retry action for reverted writes.
+- **Verification:** Added lifecycle hook tests for immediate toggle/update/delete effects, settled invalidation, exact rollback including original delete position, and retryable error toasts. `pnpm --filter @todo/todos test` (9 tests), `build`, `pnpm --filter @todo/shared test` (29 tests), `typecheck`, and `git diff --check` pass.
+- **Status:** Story 8.1 is implemented; Sprint 8 remains in progress pending Stories 8.2–8.4. Existing untracked study-guide documents were preserved.

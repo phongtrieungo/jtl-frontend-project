@@ -6,3 +6,9 @@ export const createTodoSchema = z.object({
 });
 
 export type CreateTodoFormInput = z.infer<typeof createTodoSchema>;
+
+export const updateTodoSchema = z.object({
+  title: z.string().trim().min(3, 'Task title must be at least 3 characters.').max(100, 'Task title must be 100 characters or fewer.'),
+});
+
+export type UpdateTodoFormInput = z.infer<typeof updateTodoSchema>;

@@ -2,6 +2,7 @@
 import React from 'react';
 import { useToast } from '../state/toastAtom';
 import { Alert } from './Alert';
+import { Button } from './Button';
 import { cn } from '../utils/cn';
 
 export interface ToastViewportProps {
@@ -46,6 +47,19 @@ export const ToastViewport: React.FC<ToastViewportProps> = ({
             className="shadow-md"
           >
             {toast.message}
+            {toast.action ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="mt-3"
+                onClick={() => {
+                  toast.action?.onAction();
+                  dismiss(toast.id);
+                }}
+              >
+                {toast.action.label}
+              </Button>
+            ) : null}
           </Alert>
         </div>
       ))}
