@@ -1,19 +1,12 @@
 import { createRoute, useNavigate } from '@tanstack/react-router';
-import { z } from 'zod';
 import { UserCreateForm, useUsers } from '@todo/users';
 import { TodoCreateForm, TodoList, defaultTodoDiscoveryFilters } from '@todo/todos';
 import { Route as rootRoute } from './__root';
+import { parseTodosSearch } from './todosSearch';
 
 import { TaskFilters } from '../components/TaskFilters';
 
-const todosSearchSchema = z.object({
-  userId: z.string().trim().min(1).optional(),
-  status: z.enum(['all', 'active', 'completed']).catch('all'),
-  query: z.string().trim().max(100).catch(''),
-  sort: z.enum(['newest', 'oldest', 'title-asc']).catch('newest'),
-});
-
-export const Route = createRoute({ getParentRoute: () => rootRoute, path: '/todos', validateSearch: (search) => todosSearchSchema.parse(search), component: TodosPage });
+export const Route = createRoute({ getParentRoute: () => rootRoute, path: '/todos', validateSearch: parseTodosSearch, component: TodosPage });
 
 function TodosPage(): JSX.Element {
   const search = Route.useSearch();

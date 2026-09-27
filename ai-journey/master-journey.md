@@ -135,7 +135,7 @@ This document records how AI was utilized to architect, plan, and build this sol
 | **Sprint 5** | ToDo Feature Module (`packages/todos`) | User requests: “Start sprint 05”; “Write the unit test and update the README with current state of the project” | STORY-501 and STORY-502 implemented; schema/mutation tests, package typecheck/build, and diff check pass. README reflects completed Sprints 0–5 and the pending web composition work. | **Done** |
 | **Sprint 6** | Shippable Web App Shell (`apps/web`) | User request: “Start sprint 06”; implementation and verification recorded below | Responsive routed app shell, feature composition, and web typecheck/build completed. | **Done** |
 | **Sprint 7** | Reflections, AI Journey & README | User request: “start the final sprint”; documentation review and full-stack launcher implementation | README corrected, `docs/reflection.md` added, `pnpm dev:full` implemented, and this journey updated. | **Done** |
-| **Sprint 8** | React Showcase — Resilient Task Lifecycle & Discovery | User requests through “Start story 8.3”; frontend coding, design, and testing guidance | Stories 8.1–8.3 are complete: lifecycle mutations, URL discovery, and query-derived dashboard insights. Composed verification remains. | **In progress** |
+| **Sprint 8** | React Showcase — Resilient Task Lifecycle & Discovery | User requests through “Start story 8.4”; frontend coding, design, and testing guidance | Core Stories 8.1–8.4 complete: lifecycle mutations, URL discovery, query-derived insights, deterministic feature tests, Playwright resilience flow, and real boundary validation. Stretch work deferred. | **Done** |
 
 ### Sprint 08 — Story 8.2: Shareable Task Discovery (2026-09-27)
 
@@ -212,3 +212,13 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 - **Testing:** Added pure derivation tests, a hook test that exercises live cache updates and restoration, and dashboard component tests for typed links plus loading, error, retry, and empty states. The web test setup explicitly installs the Vitest DOM matchers and stubs router scrolling under JSDOM.
 - **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` guided package ownership, query-cache derivation, semantic status treatment, and the unit/component/integration coverage split.
 - **Developer override:** None. Existing unrelated study-guide files were left untouched.
+
+### Sprint 08 — Story 8.4: Showcase Verification (2026-09-27)
+
+- **Prompt:** “Start story 8.4”.
+- **Action:** Completed the core showcase verification layer. Expanded mutation hook coverage so create, toggle, edit, and delete each prove immediate optimistic cache state, successful settled reconciliation, and exact snapshot restoration with retryable toast feedback on failure. Added task-discovery tests for Zod URL normalization and deep-link restoration, the 300 ms search debounce, labelled controls, result empty states, and clear-filter behavior.
+- **Browser verification:** Selected Playwright for the composed end-to-end layer and pinned the suite to the in-browser mock adapter so it remains independent of the optional BFF. The scenario selects Ada Lovelace, creates and reconciles a task, enables Chaos Mode, observes the optimistic “Saving...” state, and verifies that failure removes the temporary row while exposing a `role="alert"` message and keyboard-accessible retry action.
+- **Quality tooling:** Replaced the root placeholder lint path with strict workspace typechecking plus `scripts/validate-boundaries.mjs`, which rejects users/todos sideways imports, shared-to-feature dependencies, workspace deep imports, and relative package crossings. Playwright output directories are ignored; browser installation and execution commands are documented in the README.
+- **Verification:** `pnpm lint`, `pnpm build`, and `pnpm test` pass (59 JavaScript tests: shared 29, todos 22, web 8); `pnpm test:e2e` passes (1 Chromium flow); and `dotnet test services/bff.tests/Bff.Tests.csproj` passes (24 integration tests). `git diff --check` is clean.
+- **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` shaped package ownership, accessible assertions, mutation lifecycle coverage, and the four-layer verification split.
+- **Developer override:** None. Existing untracked study-guide documents were preserved. Core Sprint 8 is complete; Stories 8.5–8.6 remain optional deferred stretch work.

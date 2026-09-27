@@ -16,7 +16,7 @@
 - **Styling & Tokens:** TailwindCSS (Slate + Indigo palette)
 - **Form Validation:** Zod with accessible inline error binding
 - **Accessibility:** WCAG 2.1 AA compliant, semantic HTML, visible keyboard focus rings, ARIA contracts
-- **Testing:** Vitest, React Testing Library, jsdom, and xUnit integration tests for the BFF
+- **Testing:** Vitest, React Testing Library, jsdom, Playwright, and xUnit integration tests for the BFF
 
 ---
 
@@ -87,6 +87,9 @@
 git clone https://github.com/phongtrieungo/jtl-frontend-project.git
 cd jtl-frontend-project
 pnpm install
+
+# Install the browser used by the Playwright end-to-end suite
+pnpm exec playwright install chromium
 ```
 
 ### Verification & Testing
@@ -97,13 +100,16 @@ pnpm typecheck
 # Run test suites across all packages
 pnpm test
 
+# Run the composed mock-mode browser resilience flow
+pnpm test:e2e
+
 # Run the BFF integration tests (.NET 10)
 dotnet test services/bff.tests/Bff.Tests.csproj
 
 # Run build across all packages in topological order
 pnpm build
 
-# Run linter
+# Run strict TypeScript validation and the package-boundary validator
 pnpm lint
 ```
 
@@ -119,7 +125,7 @@ pnpm dev:full
 
 For separate terminals in full-stack mode, run `dotnet run --project services/bff/bff.csproj -- --urls http://localhost:5000` and `pnpm dev:web`.
 
-The BFF is available at `http://localhost:5000`. Its health endpoint is `/api/health`; Swagger UI is available at `/swagger` in the Development environment. `pnpm dev` runs the web app in its configured mode (automatic mode falls back to the in-browser mock when the BFF is unavailable); `pnpm dev:full` starts the BFF and web app together and stops both when either process exits. The root `pnpm test` command runs JavaScript workspace tests; use the `dotnet test` command above for BFF coverage.
+The BFF is available at `http://localhost:5000`. Its health endpoint is `/api/health`; Swagger UI is available at `/swagger` in the Development environment. `pnpm dev` runs the web app in its configured mode (automatic mode falls back to the in-browser mock when the BFF is unavailable); `pnpm dev:full` starts the BFF and web app together and stops both when either process exits. The root `pnpm test` command runs JavaScript workspace tests; `pnpm test:e2e` starts a mock-mode Vite server and executes the Playwright resilience flow; use the `dotnet test` command above for BFF coverage.
 
 ---
 
@@ -138,20 +144,21 @@ The shared package provides the dual-mode API client and mock engine. The user a
 
 ## 6. Current Sprint Status
 
-Sprints 0–7 are implemented: planning and repository foundation, shared core, .NET BFF, user and ToDo feature packages, web shell with route composition, and final handover/reflection documentation. Sprint 8 is in progress as a focused React showcase iteration: Stories 8.1–8.3 (optimistic task lifecycle, shareable discovery, and dashboard insights) are complete; see [the sprint plan](docs/sprint-planning.md#sprint-8-react-showcase--resilient-task-lifecycle--discovery) for the remaining scope and acceptance criteria.
+Sprints 0–8 core scope is implemented. The React showcase adds optimistic create/toggle/edit/delete lifecycles, shareable discovery, query-derived dashboard insights, deterministic feature tests, and a composed Playwright rollback flow. Optional bulk actions and personalization remain explicitly deferred stretch work; see [the sprint plan](docs/sprint-planning.md#sprint-8-react-showcase--resilient-task-lifecycle--discovery).
 
 The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
 
-### Planned Showcase Sprint
+### Delivered Showcase Sprint
 
-Sprint 8 will evolve the task board without changing its monorepo boundaries. Its required scope is:
+Sprint 8 evolved the task board without changing its monorepo boundaries. Its delivered core scope is:
 
 - optimistic task completion, editing, and deletion with deterministic Chaos Mode rollback;
 - shareable, Zod-validated URL filters for assignee, status, search, and sort;
 - query-derived dashboard insights with typed drill-down navigation; and
-- feature and browser-level verification for successful and failed mutation paths.
+- feature tests for immediate optimistic state, success reconciliation, and exact failure rollback; and
+- Playwright verification of user selection, task creation, Chaos Mode, the visible saving state, and retryable rollback feedback.
 
-Bulk actions with undo, draft persistence, and display preferences are explicitly stretch work. They begin only after the required scope meets its quality gate.
+`pnpm lint` now performs real strict TypeScript and package-boundary validation instead of placeholder package scripts. Bulk actions with undo, draft persistence, and display preferences remain deferred stretch work.
 
 ---
 
@@ -163,7 +170,7 @@ All project specifications, agent directives, and development roadmaps are track
 | :--- | :--- | :--- |
 | **Product Requirements (PRD)** | [docs/prd.md](docs/prd.md) | Exhaustive requirements, feature scope, NFRs, and evaluation alignment. |
 | **System Architecture** | [docs/architecture.md](docs/architecture.md) | Detailed topology, .NET 10 BFF specification, sequence diagrams, and trade-offs. |
-| **Sprint Planning Roadmap** | [docs/sprint-planning.md](docs/sprint-planning.md) | 7-sprint agile delivery plan with user stories and Gherkin acceptance criteria. |
+| **Sprint Planning Roadmap** | [docs/sprint-planning.md](docs/sprint-planning.md) | 8-sprint agile delivery plan with user stories and Gherkin acceptance criteria. |
 | **Frontend Coding Skill** | [.agents/skills/frontend-coding/SKILL.md](.agents/skills/frontend-coding/SKILL.md) | TypeScript, boundary enforcement, query key factories, and optimistic update patterns. |
 | **Frontend Design Skill** | [.agents/skills/frontend-design/SKILL.md](.agents/skills/frontend-design/SKILL.md) | Slate + Indigo design system, optimistic visual states, and WCAG AA guidelines. |
 | **Frontend Testing Skill** | [.agents/skills/frontend-testing/SKILL.md](.agents/skills/frontend-testing/SKILL.md) | 4-layer testing pyramid and canonical Vitest/RTL optimistic rollback test recipes. |
@@ -183,6 +190,6 @@ All project specifications, agent directives, and development roadmaps are track
 - [x] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
 - [x] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
 - [x] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
-- [ ] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery _(in progress; Stories 8.1–8.3 complete)_
+- [x] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery _(core Stories 8.1–8.4 complete; stretch work deferred)_
 
 Performance and testing trade-offs, including current query cache settings, route loading status, and the four-layer test strategy, are documented in [docs/reflection.md](docs/reflection.md).

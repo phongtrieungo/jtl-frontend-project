@@ -9,6 +9,9 @@ build/
 .turbo/
 .cache/
 *.tsbuildinfo
+test-results/
+playwright-report/
+blob-report/
 
 
 # .NET / MSBuild outputs
