@@ -310,7 +310,7 @@ Each story adheres to standard agile requirements:
 ---
 
 ## Sprint 8: React Showcase — Resilient Task Lifecycle & Discovery
-**Status:** Planned — pending review
+**Status:** In progress — Story 8.1 complete; Stories 8.2–8.4 pending
 **Goal:** Extend the completed take-home into a concise interview showcase. The sprint demonstrates advanced React state management without widening the architecture: optimistic task mutations, type-safe URL-driven discovery, derived dashboard insights, and evidence-backed resilience.
 
 ### Sprint Guardrails
@@ -323,6 +323,7 @@ Each story adheres to standard agile requirements:
 ### Story 8.1: Optimistic Task Lifecycle
 - **ID:** `STORY-801`
 - **Priority:** Core
+- **Status:** Complete (2026-09-27)
 - **User Story:**
   *As an operator, I want to complete, rename, and delete tasks immediately so that routine work is fast while failures remain safe and understandable.*
 - **Scope & Targets:**

@@ -138,7 +138,7 @@ The shared package provides the dual-mode API client and mock engine. The user a
 
 ## 6. Current Sprint Status
 
-Sprints 0–7 are implemented: planning and repository foundation, shared core, .NET BFF, user and ToDo feature packages, web shell with route composition, and final handover/reflection documentation. Sprint 8 is planned as a focused React showcase iteration; see [the sprint plan](docs/sprint-planning.md#sprint-8-react-showcase--resilient-task-lifecycle--discovery) for its reviewable scope and acceptance criteria.
+Sprints 0–7 are implemented: planning and repository foundation, shared core, .NET BFF, user and ToDo feature packages, web shell with route composition, and final handover/reflection documentation. Sprint 8 is in progress as a focused React showcase iteration: Story 8.1 (optimistic task lifecycle) is complete; see [the sprint plan](docs/sprint-planning.md#sprint-8-react-showcase--resilient-task-lifecycle--discovery) for the remaining scope and acceptance criteria.
 
 The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
 
@@ -183,6 +183,6 @@ All project specifications, agent directives, and development roadmaps are track
 - [x] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
 - [x] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
 - [x] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
-- [ ] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery
+- [ ] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery _(in progress; Story 8.1 complete)_
 
 Performance and testing trade-offs, including current query cache settings, route loading status, and the four-layer test strategy, are documented in [docs/reflection.md](docs/reflection.md).
