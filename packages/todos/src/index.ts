@@ -20,3 +20,4 @@ export {
   type TodoSortOrder,
   type TodoStatusFilter,
 } from './utils/taskDiscovery';
+export { useTaskInsights, type TaskInsightsResult } from './hooks/useTaskInsights';

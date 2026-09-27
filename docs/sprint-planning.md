@@ -310,7 +310,7 @@ Each story adheres to standard agile requirements:
 ---
 
 ## Sprint 8: React Showcase — Resilient Task Lifecycle & Discovery
-**Status:** In progress — Stories 8.1–8.2 complete; Stories 8.3–8.4 pending
+**Status:** In progress — Stories 8.1–8.3 complete; Story 8.4 pending
 **Goal:** Extend the completed take-home into a concise interview showcase. The sprint demonstrates advanced React state management without widening the architecture: optimistic task mutations, type-safe URL-driven discovery, derived dashboard insights, and evidence-backed resilience.
 
 ### Sprint Guardrails
@@ -360,6 +360,7 @@ Each story adheres to standard agile requirements:
 ### Story 8.3: Task Insights Dashboard
 - **ID:** `STORY-803`
 - **Priority:** Core
+- **Status:** Complete (2026-09-27)
 - **User Story:**
   *As an interviewer or operator, I want a concise dashboard of task progress and recent work so that the application communicates useful value at a glance.*
 - **Scope & Targets:**
