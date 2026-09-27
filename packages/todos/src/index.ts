@@ -14,3 +14,9 @@ export { useDeleteTodo, type DeleteTodoInput } from './hooks/useDeleteTodo';
 export { TodoCreateForm, type TodoCreateFormProps } from './components/TodoCreateForm';
 export { TodoList, type TodoListProps } from './components/TodoList';
 export { TodoItemRow, type TodoItemRowProps } from './components/TodoItemRow';
+export {
+  defaultTodoDiscoveryFilters,
+  type TodoDiscoveryFilters,
+  type TodoSortOrder,
+  type TodoStatusFilter,
+} from './utils/taskDiscovery';
