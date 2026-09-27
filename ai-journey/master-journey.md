@@ -135,7 +135,7 @@ This document records how AI was utilized to architect, plan, and build this sol
 | **Sprint 5** | ToDo Feature Module (`packages/todos`) | User requests: “Start sprint 05”; “Write the unit test and update the README with current state of the project” | STORY-501 and STORY-502 implemented; schema/mutation tests, package typecheck/build, and diff check pass. README reflects completed Sprints 0–5 and the pending web composition work. | **Done** |
 | **Sprint 6** | Shippable Web App Shell (`apps/web`) | User request: “Start sprint 06”; implementation and verification recorded below | Responsive routed app shell, feature composition, and web typecheck/build completed. | **Done** |
 | **Sprint 7** | Reflections, AI Journey & README | User request: “start the final sprint”; documentation review and full-stack launcher implementation | README corrected, `docs/reflection.md` added, `pnpm dev:full` implemented, and this journey updated. | **Done** |
-| **Sprint 8** | React Showcase — Resilient Task Lifecycle & Discovery | User request: “update the plan for these and I will review them”; later “Start sprint 08”; frontend coding, design, and testing guidance | Story 8.1 lifecycle mutations, accessible row interactions, rollback retry actions, and deterministic tests are complete. URL discovery, dashboard insights, and composed verification remain. | **In progress** |
+| **Sprint 8** | React Showcase — Resilient Task Lifecycle & Discovery | User requests through “Start story 8.3”; frontend coding, design, and testing guidance | Stories 8.1–8.3 are complete: lifecycle mutations, URL discovery, and query-derived dashboard insights. Composed verification remains. | **In progress** |
 
 ### Sprint 08 — Story 8.2: Shareable Task Discovery (2026-09-27)
 
@@ -202,3 +202,13 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 - **UI and accessibility:** Extended task rows with accessible status controls, a Zod-validated inline title editor, explicit inline delete confirmation, disabled conflicting controls while saving, and a programmatic “Saving…” state. Toasts now support a keyboard-accessible retry action for reverted writes.
 - **Verification:** Added lifecycle hook tests for immediate toggle/update/delete effects, settled invalidation, exact rollback including original delete position, and retryable error toasts. `pnpm --filter @todo/todos test` (9 tests), `build`, `pnpm --filter @todo/shared test` (29 tests), `typecheck`, and `git diff --check` pass.
 - **Status:** Story 8.1 is implemented; Sprint 8 remains in progress pending Stories 8.2–8.4. Existing untracked study-guide documents were preserved.
+
+### Sprint 08 — Story 8.3: Task Insights Dashboard (2026-09-27)
+
+- **Prompt:** “Start story 8.3”.
+- **Action:** Completed the existing dashboard draft with task-only derived insight utilities, a `useTaskInsights` query composition hook, and an application-owned dashboard presentation. The dashboard now shows total, active, completed, and completion-rate metrics; the five most recent tasks; and up to five users ranked by active workload.
+- **Architecture:** Insights observe the existing per-user `todoKeys.byUser` query caches, so optimistic creation, completion, rename, deletion, and rollback flow directly into the dashboard without Jotai or another server-data store. `packages/todos` owns task derivation and fetching; `apps/web` joins user names and owns cross-feature route composition. No sideways feature import was added.
+- **UX and accessibility:** Added typed drill-down links to filtered task views and user profiles, stable metric/list skeletons, explicit unavailable and empty states, retry behavior, `aria-busy` regions, a saving announcement for optimistic data, and text labels for active/completed status.
+- **Testing:** Added pure derivation tests, a hook test that exercises live cache updates and restoration, and dashboard component tests for typed links plus loading, error, retry, and empty states. The web test setup explicitly installs the Vitest DOM matchers and stubs router scrolling under JSDOM.
+- **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` guided package ownership, query-cache derivation, semantic status treatment, and the unit/component/integration coverage split.
+- **Developer override:** None. Existing unrelated study-guide files were left untouched.
