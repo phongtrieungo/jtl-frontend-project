@@ -137,6 +137,13 @@ This document records how AI was utilized to architect, plan, and build this sol
 | **Sprint 7** | Reflections, AI Journey & README | User request: “start the final sprint”; documentation review and full-stack launcher implementation | README corrected, `docs/reflection.md` added, `pnpm dev:full` implemented, and this journey updated. | **Done** |
 | **Sprint 8** | React Showcase — Resilient Task Lifecycle & Discovery | User request: “update the plan for these and I will review them”; later “Start sprint 08”; frontend coding, design, and testing guidance | Story 8.1 lifecycle mutations, accessible row interactions, rollback retry actions, and deterministic tests are complete. URL discovery, dashboard insights, and composed verification remain. | **In progress** |
 
+### Sprint 08 — Story 8.2: Shareable Task Discovery (2026-09-27)
+
+- **Prompt:** “Start user story 8.2”
+- **Action:** Added validated `/todos` URL state for assignee, status, query, and sort; a keyboard-accessible filter panel; and a 300ms debounced title search. The task list now derives its displayed items with pure filtering/sorting utilities from the existing TanStack Query cache and announces the visible result count.
+- **Resilience & accessibility:** Deep links restore their valid state without a server write. Empty states distinguish a user with no tasks from a filtered view with no matches; the latter offers a clear-filter action. Controls are explicitly labelled and inherit visible keyboard focus treatment.
+- **Architecture:** URL state remains exclusively in TanStack Router, task records remain exclusively in TanStack Query, and no Jotai state or cross-feature dependency was added.
+
 ## Developer Override — .NET 10 Standard (2026-09-24)
 
 The original planning entries above record the initial .NET 8 choice. The developer has since confirmed that this repository will use .NET 10. Current implementation and specifications target `net10.0`, including ASP.NET Core OpenAPI and `Microsoft.AspNetCore.Mvc.Testing` 10.0.0. Current setup and architecture guidance use .NET 10; the earlier .NET 8 entries are retained as historical planning context.
