@@ -425,7 +425,7 @@ Each story adheres to standard agile requirements:
 ---
 
 ## Sprint 9: Interview Readiness & Repository Cleanup
-**Status:** In progress — Stories 9.1–9.2 complete (2026-09-28)
+**Status:** In progress — Stories 9.1–9.3 complete (2026-09-28)
 **Goal:** Convert the completed showcase into a concise, trustworthy senior React interview artifact. This sprint adds no product features; it removes contradictory claims, closes quality-tooling gaps, brings the user feature to the same testing standard as the task feature, and makes the strongest React decisions easy to review and demonstrate.
 
 ### Sprint Guardrails
@@ -473,7 +473,7 @@ Each story adheres to standard agile requirements:
 ### Story 9.3: User Feature Quality Parity & Router-Agnostic Navigation
 - **ID:** `STORY-903`
 - **Priority:** P0
-- **Status:** Planned
+- **Status:** Complete (2026-09-28)
 - **User Story:**
   *As an evaluator, I want the user feature to be as testable and composition-friendly as the task feature so that package boundaries do not come at the cost of SPA behavior or confidence.*
 - **Scope & Targets:**

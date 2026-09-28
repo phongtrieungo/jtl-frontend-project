@@ -8,5 +8,13 @@ export { useUsers } from "./hooks/useUsers";
 export { useUser } from "./hooks/useUser";
 export { useCreateUser } from "./hooks/useCreateUser";
 export { UserCreateForm } from "./components/UserCreateForm";
-export { UserList } from "./components/UserList";
-export { UserDetailCard } from "./components/UserDetailCard";
+export {
+  UserList,
+  type UserLinkRenderProps,
+  type UserListProps,
+} from "./components/UserList";
+export {
+  UserDetailCard,
+  type UserDetailCardProps,
+  type UserTasksLinkRenderProps,
+} from "./components/UserDetailCard";
