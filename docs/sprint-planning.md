@@ -310,7 +310,7 @@ Each story adheres to standard agile requirements:
 ---
 
 ## Sprint 8: React Showcase — Resilient Task Lifecycle & Discovery
-**Status:** Core plus Story 8.5 complete (2026-09-27) — Stories 8.1–8.5 delivered; Story 8.6 deferred
+**Status:** Complete (2026-09-27) — Stories 8.1–8.6 delivered
 **Goal:** Extend the completed take-home into a concise interview showcase. The sprint demonstrates advanced React state management without widening the architecture: optimistic task mutations, type-safe URL-driven discovery, derived dashboard insights, and evidence-backed resilience.
 
 ### Sprint Guardrails
@@ -421,3 +421,116 @@ Each story adheres to standard agile requirements:
 2. Deliver accessible task-row interactions, then complete the URL-driven filters, search, and sort experience.
 3. Compose query-derived dashboard insights and typed drill-down links.
 4. Add composed browser coverage and delivery documentation; evaluate stretch work only after the core quality gate is green.
+
+---
+
+## Sprint 9: Interview Readiness & Repository Cleanup
+**Status:** Planned
+**Goal:** Convert the completed showcase into a concise, trustworthy senior React interview artifact. This sprint adds no product features; it removes contradictory claims, closes quality-tooling gaps, brings the user feature to the same testing standard as the task feature, and makes the strongest React decisions easy to review and demonstrate.
+
+### Sprint Guardrails
+- No new product capabilities, state libraries, services, or architectural layers.
+- Preserve the zero-sideways-dependency rule and the existing optimistic mutation contract.
+- Prefer deleting, simplifying, or documenting over adding abstractions.
+- Do not weaken accessibility, mock/BFF parity, or deterministic rollback coverage.
+- Treat all pre-existing working-tree changes as developer-owned; review them explicitly before tracking, ignoring, or removing them.
+- Every documentation claim must point to implemented code or a passing verification command.
+
+### Story 9.1: Repository Truth & Clean Baseline
+- **ID:** `STORY-901`
+- **Priority:** P0
+- **Status:** Planned
+- **User Story:**
+  *As an evaluator, I want the repository status and documentation to agree with the implementation so that I can trust the engineering claims before reviewing the code.*
+- **Scope & Targets:**
+  - Resolve the existing conflict in `ai-journey/master-journey.md` while preserving the completed Story 8.5, persistence regression, Story 8.6, and guide/deck history.
+  - Reconcile Sprint 8 status, README feature summaries, test counts, and delivered/deferred language.
+  - Review currently modified and untracked documentation artifacts and intentionally classify each as source, generated output, or local-only material.
+  - Remove stale statements that claim unsupported tooling or behavior.
+- **Acceptance Criteria:**
+  - **Given** the repository is inspected with Git, **then** no file is unmerged and no conflict marker remains in tracked source or documentation.
+  - **Given** the README, sprint plan, reflection, and AI journey are compared, **then** Story 8.6, test coverage, lint behavior, and route-loading status are described consistently.
+  - **Given** an evaluator reads a capability claim, **then** the related implementation or verification command exists and is reproducible.
+  - **Given** generated guides or decks exist, **then** their tracking policy and regeneration path are explicit without deleting developer-owned work.
+
+### Story 9.2: Real React Linting & Maintainable Source Formatting
+- **ID:** `STORY-902`
+- **Priority:** P0
+- **Status:** Planned
+- **User Story:**
+  *As a frontend maintainer, I want actual static analysis for React and TypeScript so that hook, accessibility, import, and maintainability regressions are caught before review.*
+- **Scope & Targets:**
+  - Add a repository-level ESLint configuration for TypeScript, React, React Hooks, and JSX accessibility.
+  - Replace package placeholder lint scripts with real lint commands while retaining `scripts/validate-boundaries.mjs` as an architectural check.
+  - Reformat compressed user-feature components into readable, reviewable source without changing behavior.
+  - Decide on and document one deterministic formatting check; avoid a second overlapping style system.
+- **Acceptance Criteria:**
+  - **Given** `pnpm lint` runs, **then** it executes ESLint, strict TypeScript validation, and package-boundary validation rather than success-message placeholders.
+  - **Given** hooks and interactive JSX are linted, **then** hook dependency and baseline accessibility violations fail the command.
+  - **Given** each workspace package is linted independently, **then** it passes with zero warnings.
+  - **Given** source files are reviewed, **then** component bodies are formatted for maintainability and no behavior-only diff is hidden inside mechanical formatting.
+
+### Story 9.3: User Feature Quality Parity & Router-Agnostic Navigation
+- **ID:** `STORY-903`
+- **Priority:** P0
+- **Status:** Planned
+- **User Story:**
+  *As an evaluator, I want the user feature to be as testable and composition-friendly as the task feature so that package boundaries do not come at the cost of SPA behavior or confidence.*
+- **Scope & Targets:**
+  - Add a Vitest configuration and package test script for `packages/users`.
+  - Cover the user schema, query hooks, creation success/failure, validation, loading, empty, error, and populated component states.
+  - Replace internal raw-anchor navigation with router-agnostic callbacks or render composition owned by `apps/web`; do not add a TanStack Router dependency to `packages/users`.
+  - Provide accessible retry behavior for failed user list/detail queries where appropriate.
+- **Acceptance Criteria:**
+  - **Given** `pnpm --filter @todo/users test` runs, **then** the package executes independently and covers its public behavior without importing `apps/web`.
+  - **Given** a user opens a profile or task link through the composed application, **then** navigation uses typed TanStack Router behavior without a full document reload.
+  - **Given** user creation succeeds or fails, **then** cache invalidation, form state, and accessible feedback are verified deterministically.
+  - **Given** the user list or detail query fails, **then** the UI exposes a keyboard-accessible retry action.
+
+### Story 9.4: Runtime Boundaries, Loading Strategy & Honest Performance Evidence
+- **ID:** `STORY-904`
+- **Priority:** P1
+- **Status:** Planned
+- **User Story:**
+  *As an evaluator, I want failures and loading boundaries to be deliberate and performance claims to be measured so that the application demonstrates production judgment rather than checklist architecture.*
+- **Scope & Targets:**
+  - Add route-level not-found and unexpected-error experiences with accessible recovery actions.
+  - Introduce route-level lazy loading where it produces a meaningful bundle split, then record before/after build output.
+  - Reconcile Query defaults with feature-specific `staleTime` and `gcTime` settings, documenting intentional exceptions.
+  - Document the dashboard's per-user query fan-out and the production threshold at which an aggregate endpoint would replace it; do not add that endpoint in this cleanup sprint.
+- **Acceptance Criteria:**
+  - **Given** a route render or data boundary fails, **then** the user receives an accessible fallback and a recovery path rather than a blank application.
+  - **Given** a production build completes, **then** route chunks and before/after bundle sizes are recorded in `docs/reflection.md` without claiming unmeasured improvement.
+  - **Given** caching configuration is reviewed, **then** global and feature defaults are consistent or explicitly justified.
+  - **Given** the dashboard architecture is discussed, **then** its optimistic-cache coherence benefit and N+1 scaling trade-off are both documented.
+
+### Story 9.5: Mutation Semantics & Interview Handoff
+- **ID:** `STORY-905`
+- **Priority:** P1
+- **Status:** Planned
+- **User Story:**
+  *As an interviewer, I want mutation behavior and the project walkthrough to use precise language so that I can distinguish implemented guarantees from demo conveniences.*
+- **Scope & Targets:**
+  - Audit overlapping create, row, and bulk mutation behavior for stale-snapshot or conflicting-action risks and add focused regression tests where concurrency is supported.
+  - Clarify bulk-delete recovery semantics: recreating a task is a restore with a potentially new ID, not identity-preserving undo. Update UI copy and documentation, or narrow undo to operations whose identity can be preserved.
+  - Reduce the README opening to a fast evaluator path: run, demo, architecture thesis, verification, and known trade-offs.
+  - Produce one concise interview walkthrough centered on state ownership, optimistic rollback, URL state, accessibility, and testing; move optional BFF, personalization, and bulk details to follow-up material.
+- **Acceptance Criteria:**
+  - **Given** supported mutations overlap, **then** deterministic tests prove that a rollback cannot erase a later confirmed change; unsupported conflicts are prevented in the UI and documented.
+  - **Given** a deleted task is recovered through recreation, **then** user-facing and technical language does not promise preservation of its original identity.
+  - **Given** an evaluator has five minutes, **then** the README provides a direct path to launch the app, trigger a successful optimistic write, trigger Chaos Mode rollback, and locate the supporting tests.
+  - **Given** the project is discussed in an interview, **then** the primary narrative explains React-specific ownership and rendering decisions before optional infrastructure.
+
+### Delivery Sequence
+1. Complete Story 9.1 first so every later change starts from a trustworthy baseline.
+2. Deliver Stories 9.2 and 9.3 to close the most visible React quality gaps.
+3. Complete Story 9.4 with measured output rather than speculative optimization claims.
+4. Finish Story 9.5, rerun the full quality gate, and freeze feature scope for interview use.
+
+### Definition of Done
+- The Git index has no unmerged paths and tracked files contain no conflict markers.
+- README, sprint plan, reflection, and AI journey agree on delivered scope and verification evidence.
+- `pnpm lint`, `pnpm typecheck`, `pnpm test`, `pnpm build`, `pnpm test:e2e`, and `dotnet test services/bff.tests/Bff.Tests.csproj` pass.
+- `packages/users` has independent tests and no internal navigation causes a full-page reload in the composed SPA.
+- Error boundaries, lazy-route behavior, caching choices, dashboard fan-out, and mutation recovery semantics are documented truthfully.
+- No new product feature or architectural layer is introduced.

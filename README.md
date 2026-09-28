@@ -69,7 +69,7 @@
 | :--- | :--- | :--- | :--- |
 | **`packages/shared`** | Core Library | **Complete (Sprint 2)** | Domain types, query keys (`userKeys`, `todoKeys`), session-stable dual-mode API client, localStorage-backed in-browser mock DB, Jotai atoms (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`), and accessible UI primitives. |
 | **`services/bff`** | Backend Service | **Complete (Sprint 3)** | ASP.NET Core (.NET 10) Minimal API with health, user, todo, and chaos endpoints; seeded thread-safe in-memory stores; OpenAPI; latency/chaos middleware; and 24 xUnit integration tests. |
-| **`packages/users`** | Feature Module | **Complete (Sprint 4)** | Zod user validation, TanStack Query hooks, accessible user creation form, profile card, and directory; includes unit/component tests. |
+| **`packages/users`** | Feature Module | **Complete (Sprint 4); test parity planned for Sprint 9** | Zod user validation, TanStack Query hooks, accessible user creation form, profile card, and directory. Dedicated package-level unit/component coverage is an identified cleanup gap. |
 | **`packages/todos`** | Feature Module | **Complete (Sprint 5)** | Zod task validation, user-scoped query hook, optimistic create with rollback and toast feedback, accessible create form, task list and saving status; includes schema and mutation lifecycle tests. |
 | **`apps/web`** | Web Application | **Implemented (Sprint 6)** | TanStack Router shell with dashboard, user directory/profile, and user-filtered task board. |
 
@@ -144,7 +144,7 @@ The shared package provides the dual-mode API client and mock engine. The user a
 
 ## 6. Current Sprint Status
 
-Sprints 0–8 core scope plus Story 8.5 are implemented. The React showcase adds optimistic create/toggle/edit/delete lifecycles, shareable discovery, query-derived dashboard insights, accessible bulk actions with partial rollback and undo, deterministic feature tests, and a composed Playwright rollback flow. Personalization remains explicitly deferred stretch work; see [the sprint plan](docs/sprint-planning.md#sprint-8-react-showcase--resilient-task-lifecycle--discovery).
+Sprints 0–8, including both stretch stories, are implemented. The React showcase adds optimistic create/toggle/edit/delete lifecycles, shareable discovery, query-derived dashboard insights, accessible bulk actions with partial rollback and recovery, deterministic feature tests, a composed Playwright rollback flow, draft persistence, and display preferences. Sprint 9 is a planned cleanup sprint with no new product scope; see [the sprint plan](docs/sprint-planning.md#sprint-9-interview-readiness--repository-cleanup).
 
 The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
 
@@ -160,7 +160,7 @@ Sprint 8 evolved the task board without changing its monorepo boundaries. Its de
 - Playwright verification of user selection, task creation, Chaos Mode, the visible saving state, and retryable rollback feedback; and
 - per-user valid task drafts plus persisted light/dark/system theme and compact/comfortable density preferences.
 
-`pnpm lint` now performs real strict TypeScript and package-boundary validation instead of placeholder package scripts. Draft persistence and display preferences remain deferred stretch work.
+The root `pnpm lint` command currently performs strict TypeScript and package-boundary validation; package lint scripts are still placeholders and real React/TypeScript linting is planned for Sprint 9. Draft persistence and display preferences are delivered.
 
 ---
 
@@ -192,6 +192,7 @@ All project specifications, agent directives, and development roadmaps are track
 - [x] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
 - [x] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
 - [x] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
-- [x] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery _(Stories 8.1–8.5 complete; Story 8.6 deferred)_
+- [x] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery _(Stories 8.1–8.6 complete)_
+- [ ] **Sprint 9:** Interview Readiness & Repository Cleanup _(planned; no new product features)_
 
 Performance and testing trade-offs, including current query cache settings, route loading status, and the four-layer test strategy, are documented in [docs/reflection.md](docs/reflection.md).
