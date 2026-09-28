@@ -50,8 +50,6 @@ The most direct implementation and regression evidence is in:
 - `packages/todos/src/hooks/useBulkTodoActions.test.tsx`
 - `e2e/task-resilience.spec.ts`
 
-For a spoken review, use [the concise interview walkthrough](docs/interview-walkthrough.md).
-
 ## Architecture thesis
 
 ```text
@@ -142,12 +140,7 @@ The BFF exposes `/api/health` and Development Swagger UI at `/swagger`. The brow
 - [Architecture](docs/architecture.md)
 - [Sprint plan](docs/sprint-planning.md)
 - [Performance and testing reflection](docs/reflection.md)
-- [Interview walkthrough](docs/interview-walkthrough.md)
-- [React interview study guide](docs/react-interview-study-guide.md)
-- [Angular-to-React architecture guide](docs/angular-to-react-architecture-guide.md)
 - [AI engineering journey](ai-journey/master-journey.md)
-
-The Markdown study guides and `scripts/render-study-guides.mjs` are source artifacts. Their matching HTML files are review-ready generated outputs; regenerate them with `pnpm docs:guides`. `docs/application-workflow-deck.html` is a hand-authored standalone presentation.
 
 ## Delivery status
 
