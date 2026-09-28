@@ -388,7 +388,7 @@ Each story adheres to standard agile requirements:
   - **Given** each create, toggle, edit, and delete mutation, **then** tests prove immediate optimistic UI/cache state, successful reconciliation, and exact rollback plus toast on failure.
   - **Given** filters and sorting, **then** tests prove Zod-validated URL state, deep-link restoration, debounce behavior, and accessible empty states.
   - **Given** the composed app, **then** a browser test covers selecting a user, creating a task, enabling Chaos Mode, observing the saving state, and observing rollback feedback.
-  - **Given** Sprint 8 is complete, **then** typecheck, build, real lint/boundary validation, JavaScript tests, and BFF integration tests pass in a normal local or CI environment.
+  - **Given** Sprint 8 is complete, **then** typecheck, build, the root lint command's boundary validation, JavaScript tests, and BFF integration tests pass in a normal local or CI environment. ESLint remains Story 9.2 scope.
 
 ### Story 8.5: Bulk Actions with Undo
 - **ID:** `STORY-805`
@@ -425,7 +425,7 @@ Each story adheres to standard agile requirements:
 ---
 
 ## Sprint 9: Interview Readiness & Repository Cleanup
-**Status:** Planned
+**Status:** In progress — Story 9.1 complete (2026-09-28)
 **Goal:** Convert the completed showcase into a concise, trustworthy senior React interview artifact. This sprint adds no product features; it removes contradictory claims, closes quality-tooling gaps, brings the user feature to the same testing standard as the task feature, and makes the strongest React decisions easy to review and demonstrate.
 
 ### Sprint Guardrails
@@ -439,7 +439,7 @@ Each story adheres to standard agile requirements:
 ### Story 9.1: Repository Truth & Clean Baseline
 - **ID:** `STORY-901`
 - **Priority:** P0
-- **Status:** Planned
+- **Status:** Complete (2026-09-28)
 - **User Story:**
   *As an evaluator, I want the repository status and documentation to agree with the implementation so that I can trust the engineering claims before reviewing the code.*
 - **Scope & Targets:**

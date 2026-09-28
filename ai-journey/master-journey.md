@@ -131,11 +131,11 @@ This document records how AI was utilized to architect, plan, and build this sol
 | **Sprint 1** | Monorepo & Tooling Setup | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-01-monorepo-foundation`. Turborepo + pnpm workspace + .NET BFF skeleton verified. | **Done** |
 | **Sprint 2** | Shared Core & Dual-Mode Client | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-02-shared-core`. Domain types, query keys, dual-mode client + mock DB, UI kit, Jotai atoms, 29 passing tests. | **Done** |
 | **Sprint 3** | .NET BFF Service (`services/bff`) | `write_to_file`, `run_command`, `replace_file_content` | Feature branch `feature/sprint-03-bff-service`. Full CRUD endpoints, chaos+latency middleware, 24 passing integration tests. Adapted to net10.0 (machine has .NET 10, not .NET 8). | **Done** |
-| **Sprint 4** | User Feature Module (`packages/users`) | User request: “start sprint 04”; implementation and acceptance verification | STORY-401 and STORY-402 implemented; package tests, build, and typecheck pass. | **Done** |
+| **Sprint 4** | User Feature Module (`packages/users`) | User request: “start sprint 04”; implementation and acceptance verification | STORY-401 and STORY-402 were delivered. The delivery log recorded tests that are absent from the current tree after the Sprint 6 restoration; Story 9.3 owns restoring package-level coverage. | **Done** |
 | **Sprint 5** | ToDo Feature Module (`packages/todos`) | User requests: “Start sprint 05”; “Write the unit test and update the README with current state of the project” | STORY-501 and STORY-502 implemented; schema/mutation tests, package typecheck/build, and diff check pass. README reflects completed Sprints 0–5 and the pending web composition work. | **Done** |
 | **Sprint 6** | Shippable Web App Shell (`apps/web`) | User request: “Start sprint 06”; implementation and verification recorded below | Responsive routed app shell, feature composition, and web typecheck/build completed. | **Done** |
 | **Sprint 7** | Reflections, AI Journey & README | User request: “start the final sprint”; documentation review and full-stack launcher implementation | README corrected, `docs/reflection.md` added, `pnpm dev:full` implemented, and this journey updated. | **Done** |
-| **Sprint 8** | React Showcase — Resilient Task Lifecycle & Discovery | User requests through “Start story 8.5”; frontend coding, design, and testing guidance | Stories 8.1–8.5 complete: lifecycle mutations, URL discovery, query-derived insights, deterministic verification, and accessible bulk actions with partial rollback and undo. Story 8.6 remains deferred. | **Done** |
+| **Sprint 8** | React Showcase — Resilient Task Lifecycle & Discovery | User requests through “Start the story 8.6”; frontend coding, design, and testing guidance | Stories 8.1–8.6 complete: lifecycle mutations, URL discovery, query-derived insights, deterministic verification, accessible bulk actions, durable mock state, task drafts, and display preferences. | **Done** |
 
 ### Sprint 08 — Story 8.2: Shareable Task Discovery (2026-09-27)
 
@@ -157,7 +157,7 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 - **Prompt:** “start sprint 04”
 - **Action:** Implemented `createUserSchema`; TanStack Query hooks for listing, loading, and creating users; and accessible create form, directory, and profile components in `packages/users`. The create hook invalidates the user list after success, and all package functionality is exported through the package root.
 - **Architecture:** The feature depends only on `@todo/shared` and package dependencies; it introduces no users-to-todos dependency. Form input is Zod-validated before the mutation runs, with inline associated errors and toast feedback.
-- **Verification:** Added user schema, form validation, and mutation invalidation tests. `pnpm --filter @todo/users test` (7 tests), `typecheck`, and `build` pass; `git diff --check` is clean.
+- **Historical verification record:** This delivery originally recorded `pnpm --filter @todo/users test` (7 tests), typecheck, and build as passing. Those user-package tests and the test script are not present in the current tree after the Sprint 6 package restoration; the reproducible Story 9.1 baseline therefore excludes them, and Story 9.3 owns restoring dedicated coverage.
 
 ### Sprint 05 — ToDo Feature Package & Optimistic Mutation (2026-09-25)
 
@@ -225,13 +225,32 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 
 ### Sprint 08 — Story 8.5: Bulk Actions with Undo (2026-09-27)
 
+- **Prompt:** “Start story 8.5”.
+- **Action:** Added local task selection and select-visible controls to `TodoList`, explicit bulk-delete confirmation, and a dedicated `useBulkTodoActions` orchestration hook. Bulk completion and deletion optimistically update the owning per-user query cache while tracking each selected task independently.
+- **Resilience:** Each failed item restores only its own cached snapshot and original surviving-list position; successful siblings remain committed. A successful or partially successful action exposes an 8-second, keyboard-focusable Undo toast. Completion undo restores prior completion values, while deletion undo recreates removed tasks through the shared API adapter before canonical query reconciliation.
+- **Architecture and accessibility:** Selection remains local component state because prop composition is sufficient; no Jotai atom or server-data duplication was added. Optimistic items cannot be selected, per-row progress is conveyed with text and `aria-busy`, selection counts use a polite live region, controls have visible focus treatment, and destructive bulk actions require confirmation.
+- **Testing:** Added hook integration coverage for immediate per-item progress, isolated partial rollback, preserved delete ordering, time-bounded completion undo, delete recreation, and a focusable Undo control. Component coverage verifies labelled multi-selection, per-task live progress announcements, and bulk-delete confirmation.
+- **Verification:** `pnpm --filter @todo/todos test` passed with 28 tests at delivery; the then-current full JavaScript suite passed with 65 tests, along with `pnpm lint`, `pnpm build`, the existing Playwright flow, and `git diff --check`.
+- **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` guided query-cache ownership, interaction states, accessibility, and deterministic partial-failure tests. No developer override was needed; unrelated untracked study-guide documents were preserved.
+
+### Sprint 08 — Story 8.5 Regression: Durable Mock State & Stable BFF Mode (2026-09-27)
+
+- **Prompt:** The developer reported that bulk-completed tasks reverted after refresh, `pnpm dev:full` sometimes appeared in mock mode and sometimes BFF mode, and mock users/tasks needed browser persistence.
+- **Root cause:** `dev:full` launched Vite concurrently with the compiling BFF. Early queries could hit a connection error and switch the shared client to a fresh mock store; the health poll could later switch back to the seeded BFF, creating a split-brain cache. The mock engine itself was memory-only, so a true mock-mode refresh also reseeded it.
+- **Fix:** The dual-mode client now performs one deduplicated auto-mode health decision per page session and never redirects later BFF failures into a different store. Explicit BFF mode remains BFF and exposes an unavailable state. The full-stack launcher waits for Kestrel’s listening signal, then starts Vite with fixed `VITE_API_MODE=bff` and an explicit loopback BFF URL.
+- **Mock persistence:** Added defensive, versioned `localStorage` hydration and persistence for mock users and tasks. Every successful create, toggle, update, and delete persists; invalid stored data falls back to the seed safely.
+- **Testing and verification:** Added adapter tests for stable auto/BFF selection, mock hydration and corruption recovery tests, and a Playwright regression that bulk-completes tasks and confirms they remain complete after `page.reload()`. At delivery, `pnpm lint`, `pnpm test` (69 JavaScript tests), `pnpm build`, `pnpm test:e2e` (2 tests), and the 24 BFF integration tests passed. A live `pnpm dev:full` run confirmed the BFF listening gate, fixed BFF mode, and rendered “BFF connected” status before shutdown.
+- **Skills used:** `frontend-coding`, `frontend-testing`, and `backend-dotnet` guided state ownership, regression coverage, and full-stack readiness behavior. No developer override was needed; unrelated untracked study-guide documents were preserved.
+
+### Sprint 08 — Story 8.6: Resilience and Personalization Polish (2026-09-27)
+
 - **Prompt:** “Start the story 8.6”.
 - **Action:** Added schema-gated, per-user task draft persistence in `packages/todos`. Valid unfinished titles restore from local storage after refresh without invoking a mutation; invalid, malformed, submitted, and cleared drafts are not restored.
 - **Personalization:** Added persisted Jotai atoms for light/dark/system theme and compact/comfortable density, plus labelled header controls. The app resolves system theme through `prefers-color-scheme`, reacts to operating-system theme changes, applies document-level theme/density attributes, and provides dark-mode surface, text, control, and focus treatments.
 - **Architecture:** Drafts remain local form state rather than server cache. Display preferences are minimal cross-cutting UI state in `packages/shared`; no task records or URL filters moved into Jotai, and no sideways package dependency was introduced.
 - **Testing:** Added hook tests for valid restoration, per-user isolation, malformed/invalid rejection, updates, and clearing. Added component tests for persisted preference selection, fresh-provider restoration, and live system-theme changes, plus a composed browser test proving that draft and display preferences survive a real page reload without creating a task.
 - **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` guided local-state ownership, WCAG focus/contrast behavior, and the unit/component verification split.
-- **Developer override:** None. Story 8.5 remains deferred, and existing unrelated study-guide files were preserved.
+- **Developer override:** None. Story 8.5 was already complete, and existing unrelated study-guide files were preserved.
 
 ### Sprint 08 — Architecture and Study Guide Refresh (2026-09-27)
 
@@ -252,8 +271,17 @@ Updated the root README to mark Sprint 03 complete, document the implemented BFF
 ### Sprint 09 Planning — Interview Readiness & Repository Cleanup (2026-09-28)
 
 - **Prompt:** “Ok, then create a cleanup sprint for current status of the project”.
-- **Assessment baseline:** Reviewed the implemented React architecture and reran the current quality gates. Package-boundary/type validation, the production build, 75 JavaScript tests, 24 BFF integration tests, and 2 Playwright flows passed. The review also identified an unresolved AI-journey merge conflict, contradictory Story 8.6 documentation, placeholder package lint scripts, missing dedicated `packages/users` tests, raw-anchor internal navigation, acknowledged eager route loading, dashboard query fan-out, and imprecise bulk-delete undo language.
+- **Assessment baseline:** Reviewed the implemented React architecture and reran the current quality gates. Package-boundary/type validation, the production build, 75 JavaScript tests, 24 BFF integration tests, and 2 Playwright flows passed. The review also identified conflict residue in the AI-journey narrative, contradictory Story 8.6 documentation, placeholder package lint scripts, missing dedicated `packages/users` tests, raw-anchor internal navigation, acknowledged eager route loading, dashboard query fan-out, and imprecise bulk-delete undo language.
 - **Action:** Added Sprint 9 to `docs/sprint-planning.md` as a no-new-features cleanup sprint. Its prioritized stories cover repository truth, real React/TypeScript linting, user-feature test and navigation parity, runtime/error/loading boundaries with measured performance evidence, mutation semantics, and a concise interview handoff.
 - **Documentation alignment:** Corrected the Sprint 8 planning and README baseline to record Stories 8.1–8.6 as delivered, identify user-package tests and ESLint as planned gaps, and add Sprint 9 to the roadmap.
 - **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` shaped the cleanup guardrails, accessibility requirements, package independence, and evidence-based definition of done.
-- **Developer override:** None. The pre-existing unresolved conflict in this file is intentionally left for Story 9.1 so both branches can be reconciled as an explicit cleanup task rather than silently choosing one during sprint planning.
+- **Developer override:** None. The pre-existing narrative conflict in this file was intentionally left for Story 9.1 so the Story 8.5, persistence-regression, and Story 8.6 histories could be reconciled explicitly rather than silently choosing one side during sprint planning.
+
+### Sprint 09 — Story 9.1: Repository Truth & Clean Baseline (2026-09-28)
+
+- **Prompt:** “Start user story 9.1”.
+- **Action:** Reconstructed the lost Story 8.5 bulk-action and persistence-regression entries from Git history, corrected the mislabeled Story 8.6 entry, and aligned the Sprint 8 summary with all six delivered stories. Confirmed that the Git index has no unmerged paths and that tracked source and documentation contain no conflict markers.
+- **Documentation alignment:** Updated the README, sprint plan, and reflection to use the same current evidence: 75 JavaScript tests (33 shared, 31 todos, 11 web), 2 Playwright flows, and 24 BFF integration tests. The documentation explicitly states that `pnpm lint` currently performs package-boundary validation plus strict TypeScript checks, not ESLint, and that route modules remain eagerly loaded.
+- **Artifact classification:** The Markdown study guides and renderer are source artifacts; the corresponding HTML guides are review outputs intended for version control and regenerated with `pnpm docs:guides`; the standalone workflow deck is a hand-authored source artifact. No documentation artifact in the reviewed set is designated local-only.
+- **Verification:** `pnpm lint`, `pnpm build`, `pnpm test`, `pnpm test:e2e`, and `dotnet test services/bff.tests/Bff.Tests.csproj` pass. The first sandboxed Playwright attempt could not bind `127.0.0.1:5173`; the identical command passed after local-server permission was granted. `git diff --check`, conflict-marker inspection, and deterministic guide regeneration also pass.
+- **Skills used:** `frontend-coding`, `frontend-design`, and `frontend-testing` guided boundary preservation, accessibility-claim precision, and evidence-based test reporting. No runtime behavior or product scope changed.

@@ -1,7 +1,7 @@
 # User & ToDo Management Platform
 
 > **Senior Frontend Engineer Take-Home Assessment**  
-> A Turborepo monorepo demonstrating production-grade architecture, strict package boundaries, resilient optimistic mutations, type-safe routing, atomic cross-cutting state, and an evaluator-first dual-mode backend adapter.
+> A Turborepo monorepo demonstrating strict package boundaries, resilient optimistic mutations, type-safe routing, scoped cross-cutting state, and an evaluator-first dual-mode backend adapter.
 
 ---
 
@@ -15,7 +15,7 @@
 - **State Management:** [Jotai](https://jotai.org/) for atomic cross-cutting UI state (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`)
 - **Styling & Tokens:** TailwindCSS (Slate + Indigo palette)
 - **Form Validation:** Zod with accessible inline error binding
-- **Accessibility:** WCAG 2.1 AA compliant, semantic HTML, visible keyboard focus rings, ARIA contracts
+- **Accessibility:** Targets WCAG 2.1 AA through semantic HTML, visible keyboard focus rings, and explicit ARIA contracts
 - **Testing:** Vitest, React Testing Library, jsdom, Playwright, and xUnit integration tests for the BFF
 
 ---
@@ -69,7 +69,7 @@
 | :--- | :--- | :--- | :--- |
 | **`packages/shared`** | Core Library | **Complete (Sprint 2)** | Domain types, query keys (`userKeys`, `todoKeys`), session-stable dual-mode API client, localStorage-backed in-browser mock DB, Jotai atoms (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`), and accessible UI primitives. |
 | **`services/bff`** | Backend Service | **Complete (Sprint 3)** | ASP.NET Core (.NET 10) Minimal API with health, user, todo, and chaos endpoints; seeded thread-safe in-memory stores; OpenAPI; latency/chaos middleware; and 24 xUnit integration tests. |
-| **`packages/users`** | Feature Module | **Complete (Sprint 4); test parity planned for Sprint 9** | Zod user validation, TanStack Query hooks, accessible user creation form, profile card, and directory. Dedicated package-level unit/component coverage is an identified cleanup gap. |
+| **`packages/users`** | Feature Module | **Complete (Sprint 4); test parity planned for Story 9.3** | Zod user validation, TanStack Query hooks, accessible user creation form, profile card, and directory. Dedicated package-level unit/component coverage is an identified cleanup gap. |
 | **`packages/todos`** | Feature Module | **Complete (Sprint 5)** | Zod task validation, user-scoped query hook, optimistic create with rollback and toast feedback, accessible create form, task list and saving status; includes schema and mutation lifecycle tests. |
 | **`apps/web`** | Web Application | **Implemented (Sprint 6)** | TanStack Router shell with dashboard, user directory/profile, and user-filtered task board. |
 
@@ -110,6 +110,7 @@ dotnet test services/bff.tests/Bff.Tests.csproj
 pnpm build
 
 # Run strict TypeScript validation and the package-boundary validator
+# (ESLint/React/JSX-a11y linting is planned in Story 9.2.)
 pnpm lint
 ```
 
@@ -144,7 +145,7 @@ The shared package provides the dual-mode API client and mock engine. The user a
 
 ## 6. Current Sprint Status
 
-Sprints 0–8, including both stretch stories, are implemented. The React showcase adds optimistic create/toggle/edit/delete lifecycles, shareable discovery, query-derived dashboard insights, accessible bulk actions with partial rollback and recovery, deterministic feature tests, a composed Playwright rollback flow, draft persistence, and display preferences. Sprint 9 is a planned cleanup sprint with no new product scope; see [the sprint plan](docs/sprint-planning.md#sprint-9-interview-readiness--repository-cleanup).
+Sprints 0–8, including both stretch stories, are implemented. The React showcase adds optimistic create/toggle/edit/delete lifecycles, shareable discovery, query-derived dashboard insights, accessible bulk actions with partial rollback and recovery, deterministic feature tests, two composed Playwright resilience flows, draft persistence, and display preferences. Sprint 9 is in progress as a cleanup sprint with no new product scope; Story 9.1 establishes the repository-truth baseline described here. See [the sprint plan](docs/sprint-planning.md#sprint-9-interview-readiness--repository-cleanup).
 
 The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
 
@@ -160,19 +161,19 @@ Sprint 8 evolved the task board without changing its monorepo boundaries. Its de
 - Playwright verification of user selection, task creation, Chaos Mode, the visible saving state, and retryable rollback feedback; and
 - per-user valid task drafts plus persisted light/dark/system theme and compact/comfortable density preferences.
 
-The root `pnpm lint` command currently performs strict TypeScript and package-boundary validation; package lint scripts are still placeholders and real React/TypeScript linting is planned for Sprint 9. Draft persistence and display preferences are delivered.
+The verified Story 9.1 baseline is 75 JavaScript tests (33 shared, 31 todos, 11 web), 2 Playwright flows, and 24 BFF integration tests. The root `pnpm lint` command currently performs strict TypeScript and package-boundary validation; package lint scripts are still placeholders and real React/TypeScript/JSX-accessibility linting is Story 9.2 scope. Route modules are eagerly loaded today; measured route splitting is Story 9.4 scope. Draft persistence and display preferences are delivered.
 
 ---
 
 ## 7. Documentation & Specifications Index
 
-All project specifications, agent directives, and development roadmaps are tracked under version control:
+The repository documentation set includes:
 
 | Document | Path | Purpose |
 | :--- | :--- | :--- |
 | **Product Requirements (PRD)** | [docs/prd.md](docs/prd.md) | Exhaustive requirements, feature scope, NFRs, and evaluation alignment. |
 | **System Architecture** | [docs/architecture.md](docs/architecture.md) | Detailed topology, .NET 10 BFF specification, sequence diagrams, and trade-offs. |
-| **Sprint Planning Roadmap** | [docs/sprint-planning.md](docs/sprint-planning.md) | 8-sprint agile delivery plan with user stories and Gherkin acceptance criteria. |
+| **Sprint Planning Roadmap** | [docs/sprint-planning.md](docs/sprint-planning.md) | 9-sprint agile delivery plan with user stories and Gherkin acceptance criteria. |
 | **Frontend Coding Skill** | [.agents/skills/frontend-coding/SKILL.md](.agents/skills/frontend-coding/SKILL.md) | TypeScript, boundary enforcement, query key factories, and optimistic update patterns. |
 | **Frontend Design Skill** | [.agents/skills/frontend-design/SKILL.md](.agents/skills/frontend-design/SKILL.md) | Slate + Indigo design system, optimistic visual states, and WCAG AA guidelines. |
 | **Frontend Testing Skill** | [.agents/skills/frontend-testing/SKILL.md](.agents/skills/frontend-testing/SKILL.md) | 4-layer testing pyramid and canonical Vitest/RTL optimistic rollback test recipes. |
@@ -180,9 +181,16 @@ All project specifications, agent directives, and development roadmaps are track
 | **Agent Directives** | [AGENTS.md](AGENTS.md) / [GEMINI.md](GEMINI.md) | Continuous instructions keeping all agent operations aligned to specifications. |
 | **AI Journey Log** | [ai-journey/master-journey.md](ai-journey/master-journey.md) | Audit trail of prompts, skills, decisions, and engineer overrides. |
 
+### Documentation artifact policy
+
+- `docs/react-interview-study-guide.md`, `docs/angular-to-react-architecture-guide.md`, and `scripts/render-study-guides.mjs` are source artifacts intended for version control.
+- Their matching `.html` files are review-ready generated outputs, also intended for version control so evaluators can open them without a Markdown toolchain. Regenerate both deterministically with `pnpm docs:guides` and review source and output in the same change.
+- `docs/application-workflow-deck.html` is a hand-authored, standalone source artifact rather than renderer output; edit and review it directly.
+- None of the current guide/deck artifacts is classified as local-only. Temporary browser/test output remains excluded through `.gitignore`.
+
 ---
 
-## 8. Development Roadmap (8 Sprints)
+## 8. Development Roadmap (9 Sprints)
 
 - [x] **Sprint 0:** Product Requirements, Architecture, Skills & Sprint Planning Baseline
 - [x] **Sprint 1:** Monorepo Foundation & Tooling Setup (`turbo.json`, `pnpm-workspace.yaml`, configs)
@@ -193,6 +201,6 @@ All project specifications, agent directives, and development roadmaps are track
 - [x] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
 - [x] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
 - [x] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery _(Stories 8.1–8.6 complete)_
-- [ ] **Sprint 9:** Interview Readiness & Repository Cleanup _(planned; no new product features)_
+- [ ] **Sprint 9:** Interview Readiness & Repository Cleanup _(in progress; Story 9.1 complete, no new product features)_
 
 Performance and testing trade-offs, including current query cache settings, route loading status, and the four-layer test strategy, are documented in [docs/reflection.md](docs/reflection.md).
