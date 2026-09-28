@@ -5,7 +5,5 @@ export function useUser(id: string) {
     queryKey: userKeys.detail(id),
     queryFn: () => apiClient.getUserById(id),
     enabled: Boolean(id),
-    staleTime: 30_000,
-    gcTime: 300_000,
   });
 }

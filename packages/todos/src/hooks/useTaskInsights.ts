@@ -14,8 +14,6 @@ export function useTaskInsights(userIds: readonly string[]): TaskInsightsResult 
   const queries = useQueries({ queries: [...new Set(userIds)].map((userId) => ({
     queryKey: todoKeys.byUser(userId),
     queryFn: () => apiClient.getTodosByUser(userId),
-    staleTime: 30_000,
-    gcTime: 300_000,
   })) });
   return {
     insights: deriveTaskInsights(queries.flatMap((query) => query.data ?? [])),

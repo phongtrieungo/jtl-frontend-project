@@ -9,8 +9,17 @@ import './index.css';
 
 const envMode = (import.meta as ImportMeta & { env?: { VITE_API_MODE?: ApiClientMode } }).env?.VITE_API_MODE;
 if (envMode === 'mock' || envMode === 'bff' || envMode === 'auto') apiClient.setMode(envMode);
-const queryClient = new QueryClient({ defaultOptions: { queries: { retry: 1, refetchOnWindowFocus: false } } });
-const router = createRouter({ routeTree, defaultPreload: 'intent' });
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      retry: 1,
+      refetchOnWindowFocus: false,
+      staleTime: 30_000,
+      gcTime: 300_000,
+    },
+  },
+});
+const router = createRouter({ routeTree, defaultPreload: 'intent', defaultPendingMs: 150, defaultPendingMinMs: 300 });
 
 declare module '@tanstack/react-router' { interface Register { router: typeof router } }
 

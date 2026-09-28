@@ -6,7 +6,5 @@ export function useTodosByUser(userId: string) {
     queryKey: todoKeys.byUser(userId),
     queryFn: () => apiClient.getTodosByUser(userId),
     enabled: Boolean(userId),
-    staleTime: 30_000,
-    gcTime: 300_000,
   });
 }
