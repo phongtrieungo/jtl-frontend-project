@@ -22,7 +22,9 @@ TanStack Router provides typed routes, validated search parameters, and intent-b
 
 The current reproducible baseline is `pnpm test` with 75 JavaScript tests (33 in `packages/shared`, 31 in `packages/todos`, and 11 in `apps/web`), `pnpm test:e2e` with 2 Playwright flows, and `dotnet test services/bff.tests/Bff.Tests.csproj` with 24 integration tests. `packages/users` does not yet have a dedicated test suite; that parity work is Story 9.3 rather than a delivered capability.
 
-The current root `pnpm lint` command runs `scripts/validate-boundaries.mjs` and strict workspace TypeScript checking. It does not yet run ESLint or a JSX accessibility plugin; that tooling gap is the explicit scope of Story 9.2. The production build passes, but the generated route tree still imports route modules eagerly, so route-level code splitting remains Story 9.4 work rather than a current performance claim.
+The current root `pnpm lint` command runs the standalone package-boundary validator, ESLint with zero warnings, strict workspace TypeScript checking, and the deterministic Prettier check. ESLint uses recommended TypeScript, React, and JSX accessibility rules, with the stable Rules of Hooks and exhaustive dependency checks promoted to errors. Package-specific import restrictions duplicate the most important architectural boundaries inside editor-visible static analysis while `scripts/validate-boundaries.mjs` remains the independent repository guardrail.
+
+Prettier is the sole formatting authority; ESLint owns correctness rather than layout. To keep Story 9.2 mechanical changes reviewable, formatting is currently checked for `packages/users/src` and `eslint.config.mjs`, the areas normalized by that story. The production build passes, but the generated route tree still imports route modules eagerly, so route-level code splitting remains Story 9.4 work rather than a current performance claim.
 
 The project uses a four-layer pyramid:
 

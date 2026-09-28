@@ -7,8 +7,8 @@ import type {
   UpdateTodoInput,
   ApiHealthStatus,
 } from '../types/domain';
-import { mockDb, MockDb } from './mockDb';
-import { httpBffClient, HttpBffClient } from './httpBffClient';
+import { mockDb, type MockDb } from './mockDb';
+import { httpBffClient, type HttpBffClient } from './httpBffClient';
 
 export type ApiClientMode = 'auto' | 'bff' | 'mock';
 export interface WriteRequestOptions {

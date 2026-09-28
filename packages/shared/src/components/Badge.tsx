@@ -1,5 +1,5 @@
 // packages/shared/src/components/Badge.tsx
-import React from 'react';
+import type React from 'react';
 import { cn } from '../utils/cn';
 
 export type BadgeVariant =

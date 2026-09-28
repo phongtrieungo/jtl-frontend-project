@@ -425,7 +425,7 @@ Each story adheres to standard agile requirements:
 ---
 
 ## Sprint 9: Interview Readiness & Repository Cleanup
-**Status:** In progress — Story 9.1 complete (2026-09-28)
+**Status:** In progress — Stories 9.1–9.2 complete (2026-09-28)
 **Goal:** Convert the completed showcase into a concise, trustworthy senior React interview artifact. This sprint adds no product features; it removes contradictory claims, closes quality-tooling gaps, brings the user feature to the same testing standard as the task feature, and makes the strongest React decisions easy to review and demonstrate.
 
 ### Sprint Guardrails
@@ -456,7 +456,7 @@ Each story adheres to standard agile requirements:
 ### Story 9.2: Real React Linting & Maintainable Source Formatting
 - **ID:** `STORY-902`
 - **Priority:** P0
-- **Status:** Planned
+- **Status:** Complete (2026-09-28)
 - **User Story:**
   *As a frontend maintainer, I want actual static analysis for React and TypeScript so that hook, accessibility, import, and maintainability regressions are caught before review.*
 - **Scope & Targets:**

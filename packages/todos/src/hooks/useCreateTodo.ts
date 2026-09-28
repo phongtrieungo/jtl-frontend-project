@@ -1,7 +1,13 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAtomValue } from 'jotai';
-import { apiClient, isChaosActiveAtom, todoKeys, useToast } from '@todo/shared';
-import type { CreateTodoInput, Todo } from '@todo/shared';
+import {
+  apiClient,
+  isChaosActiveAtom,
+  todoKeys,
+  useToast,
+  type CreateTodoInput,
+  type Todo,
+} from '@todo/shared';
 
 interface CreateTodoContext {
   previousTodos: Todo[] | undefined;

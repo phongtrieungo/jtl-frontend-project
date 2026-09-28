@@ -9,7 +9,7 @@
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
     "test": "vitest run --config vitest.config.ts",
-    "lint": "echo 'web: lint passed'"
+    "lint": "eslint src --max-warnings 0"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.67.2",

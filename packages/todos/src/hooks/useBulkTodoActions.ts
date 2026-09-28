@@ -22,7 +22,8 @@ interface SuccessfulBulkItem extends TodoSnapshot {
 }
 
 function withoutOptimisticFlag(todo: Todo): Todo {
-  const { isOptimistic: _isOptimistic, ...confirmedTodo } = todo;
+  const confirmedTodo = { ...todo };
+  delete confirmedTodo.isOptimistic;
   return confirmedTodo;
 }
 

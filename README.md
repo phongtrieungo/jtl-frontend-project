@@ -109,9 +109,11 @@ dotnet test services/bff.tests/Bff.Tests.csproj
 # Run build across all packages in topological order
 pnpm build
 
-# Run strict TypeScript validation and the package-boundary validator
-# (ESLint/React/JSX-a11y linting is planned in Story 9.2.)
+# Run ESLint, strict TypeScript, package-boundary validation, and formatting checks
 pnpm lint
+
+# Check the deterministic formatting baseline independently
+pnpm format:check
 ```
 
 ### Running the Application
@@ -161,7 +163,9 @@ Sprint 8 evolved the task board without changing its monorepo boundaries. Its de
 - Playwright verification of user selection, task creation, Chaos Mode, the visible saving state, and retryable rollback feedback; and
 - per-user valid task drafts plus persisted light/dark/system theme and compact/comfortable density preferences.
 
-The verified Story 9.1 baseline is 75 JavaScript tests (33 shared, 31 todos, 11 web), 2 Playwright flows, and 24 BFF integration tests. The root `pnpm lint` command currently performs strict TypeScript and package-boundary validation; package lint scripts are still placeholders and real React/TypeScript/JSX-accessibility linting is Story 9.2 scope. Route modules are eagerly loaded today; measured route splitting is Story 9.4 scope. Draft persistence and display preferences are delivered.
+The verified baseline is 75 JavaScript tests (33 shared, 31 todos, 11 web), 2 Playwright flows, and 24 BFF integration tests. The root `pnpm lint` command runs ESLint with zero warnings, strict workspace TypeScript, package-boundary validation, and the deterministic formatting check. ESLint covers TypeScript correctness, React Hooks dependencies, JSX accessibility, duplicate/type-only imports, and package import restrictions. Each frontend workspace also exposes an independent `lint` script.
+
+Prettier is the repository's sole formatter; ESLint does not enforce competing layout rules. Story 9.2 deliberately scopes `pnpm format` and `pnpm format:check` to the previously compressed `packages/users/src` source and the root ESLint configuration, keeping this cleanup diff reviewable. Route modules remain eagerly loaded today; measured route splitting is Story 9.4 scope.
 
 ---
 
@@ -201,6 +205,6 @@ The repository documentation set includes:
 - [x] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
 - [x] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
 - [x] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery _(Stories 8.1–8.6 complete)_
-- [ ] **Sprint 9:** Interview Readiness & Repository Cleanup _(in progress; Story 9.1 complete, no new product features)_
+- [ ] **Sprint 9:** Interview Readiness & Repository Cleanup _(in progress; Stories 9.1–9.2 complete, no new product features)_
 
 Performance and testing trade-offs, including current query cache settings, route loading status, and the four-layer test strategy, are documented in [docs/reflection.md](docs/reflection.md).

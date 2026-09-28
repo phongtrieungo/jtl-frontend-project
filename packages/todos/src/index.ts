@@ -1,9 +1,9 @@
 // @todo/todos public API entrypoint
-import { type TodoSummary } from '@todo/shared';
+import type { TodoSummary } from '@todo/shared';
 
 export const TODOS_MODULE_VERSION = '0.1.0';
 
-export interface Todo extends TodoSummary {}
+export type Todo = TodoSummary;
 /** Public API for the isolated ToDo feature package. */
 export { createTodoSchema, updateTodoSchema, type CreateTodoFormInput, type UpdateTodoFormInput } from './schemas/todoSchemas';
 export { useCreateTodo } from './hooks/useCreateTodo';

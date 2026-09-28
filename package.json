@@ -9,19 +9,30 @@
     "dev:full": "node scripts/dev-full.mjs",
     "build": "turbo run build",
     "typecheck": "turbo run typecheck",
-    "lint": "node scripts/validate-boundaries.mjs && turbo run typecheck",
+    "lint": "node scripts/validate-boundaries.mjs && eslint . --max-warnings 0 && turbo run typecheck && pnpm format:check",
+    "format": "prettier --write \"packages/users/src/**/*.{ts,tsx}\" eslint.config.mjs",
+    "format:check": "prettier --check \"packages/users/src/**/*.{ts,tsx}\" eslint.config.mjs",
     "test": "turbo run test",
     "test:e2e": "playwright test",
     "test:all": "pnpm test && pnpm test:e2e",
+    "docs:guides": "node scripts/render-study-guides.mjs",
     "clean": "turbo run clean"
   },
   "devDependencies": {
+    "@eslint/js": "^9.39.5",
     "@playwright/test": "^1.63.0",
     "@testing-library/jest-dom": "^7.0.1",
     "@testing-library/react": "^16.3.3",
+    "eslint": "^9.39.5",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
+    "eslint-plugin-react": "^7.37.5",
+    "eslint-plugin-react-hooks": "^7.1.1",
+    "globals": "^17.12.0",
     "jsdom": "^30.1.1",
+    "prettier": "^3.9.9",
     "turbo": "^2.4.4",
     "typescript": "^5.8.2",
+    "typescript-eslint": "^8.70.1",
     "vitest": "^5.0.1"
   }
 }

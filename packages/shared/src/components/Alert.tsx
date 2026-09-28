@@ -1,5 +1,5 @@
 // packages/shared/src/components/Alert.tsx
-import React from 'react';
+import type React from 'react';
 import {
   Info,
   CheckCircle2,

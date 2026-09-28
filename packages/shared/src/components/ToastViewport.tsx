@@ -1,5 +1,5 @@
 // packages/shared/src/components/ToastViewport.tsx
-import React from 'react';
+import type React from 'react';
 import { useToast } from '../state/toastAtom';
 import { Alert } from './Alert';
 import { Button } from './Button';

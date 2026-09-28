@@ -1,5 +1,5 @@
 // packages/shared/src/components/Spinner.tsx
-import React from 'react';
+import type React from 'react';
 import { cn } from '../utils/cn';
 
 export interface SpinnerProps extends React.SVGAttributes<SVGSVGElement> {
