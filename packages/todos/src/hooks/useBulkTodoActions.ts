@@ -8,6 +8,7 @@ import {
   useToast,
   type Todo,
 } from '@todo/shared';
+import { beginTodoMutation, finishTodoMutation } from './todoMutationCoordinator';
 
 export type BulkTodoAction = 'complete' | 'delete';
 export type BulkTodoItemStatus = 'pending' | 'succeeded' | 'failed';
@@ -68,6 +69,7 @@ export function useBulkTodoActions(): BulkTodoActionsResult {
 
     const queryKey = todoKeys.byUser(successfulItems[0].todo.assigneeId);
     await queryClient.cancelQueries({ queryKey });
+    beginTodoMutation(queryClient, queryKey);
     setItemStatuses(Object.fromEntries(successfulItems.map(({ todo }) => [todo.id, 'pending'])));
 
     if (action === 'complete') {
@@ -125,7 +127,9 @@ export function useBulkTodoActions(): BulkTodoActionsResult {
       }
     }));
 
-    await queryClient.invalidateQueries({ queryKey });
+    if (finishTodoMutation(queryClient, queryKey)) {
+      await queryClient.invalidateQueries({ queryKey });
+    }
     if (failures.length > 0) {
       toast({
         type: 'error',
@@ -135,8 +139,10 @@ export function useBulkTodoActions(): BulkTodoActionsResult {
     } else {
       toast({
         type: 'success',
-        title: 'Bulk action undone',
-        message: `${successfulItems.length} ${successfulItems.length === 1 ? 'task was' : 'tasks were'} restored.`,
+        title: action === 'delete' ? 'Deleted tasks restored' : 'Bulk action undone',
+        message: action === 'delete'
+          ? `${successfulItems.length} ${successfulItems.length === 1 ? 'task was' : 'tasks were'} recreated with a new server ID.`
+          : `${successfulItems.length} ${successfulItems.length === 1 ? 'task was' : 'tasks were'} restored.`,
       });
     }
   }, [isChaosActive, queryClient, toast]);
@@ -150,6 +156,7 @@ export function useBulkTodoActions(): BulkTodoActionsResult {
 
     const queryKey = todoKeys.byUser(eligibleTodos[0].assigneeId);
     await queryClient.cancelQueries({ queryKey });
+    beginTodoMutation(queryClient, queryKey);
     const previousTodos = queryClient.getQueryData<Todo[]>(queryKey) ?? [];
     const selectedIds = new Set(eligibleTodos.map((todo) => todo.id));
     const snapshots: TodoSnapshot[] = previousTodos
@@ -187,7 +194,9 @@ export function useBulkTodoActions(): BulkTodoActionsResult {
       }
     }));
 
-    await queryClient.invalidateQueries({ queryKey });
+    if (finishTodoMutation(queryClient, queryKey)) {
+      await queryClient.invalidateQueries({ queryKey });
+    }
 
     if (failedItems.length > 0) {
       toast({
@@ -201,10 +210,12 @@ export function useBulkTodoActions(): BulkTodoActionsResult {
       toast({
         type: 'success',
         title: `${successfulItems.length} ${successfulItems.length === 1 ? 'task' : 'tasks'} ${verb}`,
-        message: 'You can undo this action for the next 8 seconds.',
+        message: action === 'delete'
+          ? 'You can restore deleted tasks as new tasks for the next 8 seconds.'
+          : 'You can undo this action for the next 8 seconds.',
         durationMs: 8_000,
         action: {
-          label: 'Undo',
+          label: action === 'delete' ? 'Restore' : 'Undo',
           onAction: () => {
             void undoBulkAction(action, successfulItems, originalOrder);
           },

@@ -1,6 +1,7 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useAtomValue } from 'jotai';
 import { apiClient, isChaosActiveAtom, todoKeys, useToast, type Todo } from '@todo/shared';
+import { beginTodoMutation, finishTodoMutation } from './todoMutationCoordinator';
 
 export interface ToggleTodoInput {
   todo: Todo;
@@ -22,15 +23,25 @@ export function useToggleTodo() {
       const queryKey = todoKeys.byUser(todo.assigneeId);
       await queryClient.cancelQueries({ queryKey });
       const previousTodos = queryClient.getQueryData<Todo[]>(queryKey);
+      beginTodoMutation(queryClient, queryKey);
       queryClient.setQueryData<Todo[]>(queryKey, (current) =>
         current?.map((item) => item.id === todo.id ? { ...item, completed: !item.completed, isOptimistic: true } : item)
       );
       return { previousTodos, queryKey };
     },
+    onSuccess: (updatedTodo, _input, context) => {
+      queryClient.setQueryData<Todo[]>(context.queryKey, (current) =>
+        current?.map((todo) => todo.id === updatedTodo.id ? updatedTodo : todo),
+      );
+    },
     onError: (error, input, context) => {
       if (context) {
-        if (context.previousTodos === undefined) queryClient.removeQueries({ queryKey: context.queryKey, exact: true });
-        else queryClient.setQueryData(context.queryKey, context.previousTodos);
+        const previousTodo = context.previousTodos?.find((todo) => todo.id === input.todo.id);
+        if (previousTodo) {
+          queryClient.setQueryData<Todo[]>(context.queryKey, (current) =>
+            current?.map((todo) => todo.id === previousTodo.id ? previousTodo : todo),
+          );
+        }
       }
       toast.toast({
         type: 'error', title: 'Task status reverted',
@@ -38,7 +49,12 @@ export function useToggleTodo() {
         action: { label: 'Try again', onAction: () => { void mutation.mutateAsync(input).catch(() => undefined); } },
       });
     },
-    onSettled: async (_data, _error, { todo }) => { await queryClient.invalidateQueries({ queryKey: todoKeys.byUser(todo.assigneeId) }); },
+    onSettled: async (_data, _error, { todo }) => {
+      const queryKey = todoKeys.byUser(todo.assigneeId);
+      if (finishTodoMutation(queryClient, queryKey)) {
+        await queryClient.invalidateQueries({ queryKey });
+      }
+    },
   });
   return mutation;
 }

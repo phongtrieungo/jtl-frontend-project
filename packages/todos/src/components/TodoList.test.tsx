@@ -86,4 +86,25 @@ describe('TodoList discovery states', () => {
     act(() => resolveUpdate({ ...todo, completed: true }));
     await waitFor(() => expect(screen.getByText(`${todo.title}: updated.`)).toBeInTheDocument());
   });
+
+  it('locks conflicting controls while a task mutation is optimistic', async () => {
+    const todo = { id: 'todo-1', title: 'Write engine notes', assigneeId: userId, completed: false, createdAt: '2026-09-27T00:00:00.000Z' };
+    let resolveToggle!: (todo: Todo) => void;
+    vi.spyOn(apiClient, 'toggleTodo').mockReturnValue(
+      new Promise<Todo>((resolve) => { resolveToggle = resolve; }),
+    );
+    vi.spyOn(apiClient, 'getTodosByUser').mockResolvedValue([{ ...todo, completed: true }]);
+    renderList([todo]);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mark complete' }));
+
+    await waitFor(() => expect(screen.getByText('Saving...')).toBeInTheDocument());
+    expect(screen.queryByRole('button', { name: 'Mark active' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument();
+    expect(screen.getByRole('checkbox', { name: `Select ${todo.title}` })).toBeDisabled();
+
+    act(() => resolveToggle({ ...todo, completed: true }));
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Mark active' })).toBeEnabled());
+  });
 });

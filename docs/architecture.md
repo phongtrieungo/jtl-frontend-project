@@ -159,6 +159,7 @@ sequenceDiagram
         BFF-->>Client: 201 Created (confirmedTodo with permanent ID)
         Client-->>Hook: Return confirmedTodo
         deactivate BFF
+        Hook->>Cache: Replace this mutation's temporary item with confirmedTodo
         Note over Hook,Cache: onSettled
         Hook->>Cache: Invalidate & reconcile with server data
         Cache-->>User: UI updates badge to confirmed state
@@ -168,13 +169,15 @@ sequenceDiagram
         Client-->>Hook: Throw NetworkError
         deactivate Client
         Note over Hook,Cache: onError Lifecycle Triggered
-        Hook->>Cache: setQueryData(queryKey, snapshot) [ROLLBACK]
+        Hook->>Cache: Remove this mutation's optimistic item [ROLLBACK]
         Cache-->>User: Optimistic item cleanly removed from DOM
         Hook-->>User: Trigger Toast/Alert ("Task creation failed. Reverted.")
     end
     
     deactivate Hook
 ```
+
+Rollback is operation-scoped rather than a whole-list snapshot replacement. Create removes its own temporary ID; toggle and edit restore only their prior task record; delete reinserts only its removed task at the snapshotted position. This allows independent task mutations to overlap without an earlier failure erasing a later confirmed change. Reconciliation is coalesced per user-list key, so only the last overlapping operation invalidates and an intermediate refetch cannot erase another pending optimistic record. The UI prevents unsupported same-task conflicts by withholding row actions while that record is optimistic. Bulk operations apply the same per-item rule. A bulk-delete recovery recreates the record through the API and can receive a new ID, so it is presented as **Restore**, not identity-preserving Undo.
 
 ---
 

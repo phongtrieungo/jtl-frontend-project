@@ -8,10 +8,12 @@ import {
   type CreateTodoInput,
   type Todo,
 } from '@todo/shared';
+import { beginTodoMutation, finishTodoMutation } from './todoMutationCoordinator';
 
 interface CreateTodoContext {
   previousTodos: Todo[] | undefined;
   queryKey: ReturnType<typeof todoKeys.byUser>;
+  optimisticTodoId: string;
 }
 
 export function useCreateTodo() {
@@ -34,15 +36,25 @@ export function useCreateTodo() {
         isOptimistic: true,
       };
 
+      beginTodoMutation(queryClient, queryKey);
       queryClient.setQueryData<Todo[]>(queryKey, (current) => [...(current ?? []), optimisticTodo]);
-      return { previousTodos, queryKey };
+      return { previousTodos, queryKey, optimisticTodoId: optimisticTodo.id };
+    },
+    onSuccess: (createdTodo, _input, context) => {
+      queryClient.setQueryData<Todo[]>(context.queryKey, (current) =>
+        current?.map((todo) => todo.id === context.optimisticTodoId ? createdTodo : todo),
+      );
     },
     onError: (error, input, context) => {
       if (context) {
-        if (context.previousTodos === undefined) {
+        let hasRemainingTodos = false;
+        queryClient.setQueryData<Todo[]>(context.queryKey, (current) => {
+          const next = (current ?? []).filter((todo) => todo.id !== context.optimisticTodoId);
+          hasRemainingTodos = next.length > 0;
+          return next;
+        });
+        if (context.previousTodos === undefined && !hasRemainingTodos) {
           queryClient.removeQueries({ queryKey: context.queryKey, exact: true });
-        } else {
-          queryClient.setQueryData(context.queryKey, context.previousTodos);
         }
       }
       toast.toast({
@@ -53,7 +65,10 @@ export function useCreateTodo() {
       });
     },
     onSettled: async (_data, _error, input) => {
-      await queryClient.invalidateQueries({ queryKey: todoKeys.byUser(input.assigneeId) });
+      const queryKey = todoKeys.byUser(input.assigneeId);
+      if (finishTodoMutation(queryClient, queryKey)) {
+        await queryClient.invalidateQueries({ queryKey });
+      }
     },
   });
   return mutation;

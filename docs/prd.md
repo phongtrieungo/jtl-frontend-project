@@ -74,7 +74,7 @@ A primary highlight of this system is **Data and UX Resilience**: implementing h
     3. **Form Reset:** The form resets immediately for uninterrupted user productivity.
     4. **Network Execution:** The request executes against the API layer (with simulated 300-800ms latency).
     5. **On Success:** The server returns the confirmed ToDo item with its permanent ID. The cache replaces the optimistic item or invalidates the query to fetch the canonical record.
-    6. **On Error / Failure:** The mutation catches the error, accesses the previous cache snapshot captured in `onMutate`, and restores the exact previous state (rollback).
+    6. **On Error / Failure:** The mutation catches the error, uses the cache snapshot captured in `onMutate`, and reverses only its own optimistic record. The affected record returns to its exact previous state while unrelated later confirmed changes remain intact.
     7. **Feedback:** A non-blocking alert / toast informs the user that task creation failed, explaining the reason and allowing retry.
 - **F2.4: Chaos Mode / Network Failure Simulation Toggle**
   - An interactive UI switch in the application toolbar to toggle "Simulate Network Failure".

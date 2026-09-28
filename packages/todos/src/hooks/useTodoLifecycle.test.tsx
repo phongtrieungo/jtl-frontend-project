@@ -107,4 +107,42 @@ describe('task lifecycle mutations', () => {
     expect(getDefaultStore().get(toastsAtom)[0]).toMatchObject({ title: 'Task deletion reverted', type: 'error' });
     act(() => client.clear());
   });
+
+  it('rolls back one failed row without erasing a later confirmed row change', async () => {
+    const second = { ...todo, id: 'todo-2', title: 'Second task' };
+    const confirmedSecond = { ...second, completed: true };
+    let rejectUpdate!: (error: Error) => void;
+    vi.spyOn(apiClient, 'updateTodo').mockReturnValue(
+      new Promise<Todo>((_resolve, reject) => { rejectUpdate = reject; }),
+    );
+    vi.spyOn(apiClient, 'toggleTodo').mockResolvedValue(confirmedSecond);
+    const client = createClient();
+    client.setQueryData(key, [todo, second]);
+    const { result } = renderHook(() => ({ update: useUpdateTodo(), toggle: useToggleTodo() }), {
+      wrapper: wrapper(client),
+    });
+
+    let updatePromise!: Promise<Todo>;
+    await act(async () => {
+      updatePromise = result.current.update.mutateAsync({ todo, changes: { title: 'Temporary title' } });
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    });
+    await act(async () => {
+      await result.current.toggle.mutateAsync({ todo: second });
+    });
+    expect(client.getQueryData<Todo[]>(key)).toEqual([
+      expect.objectContaining({ id: todo.id, title: 'Temporary title', isOptimistic: true }),
+      confirmedSecond,
+    ]);
+    expect(client.getQueryState(key)?.isInvalidated).toBe(false);
+
+    await act(async () => {
+      rejectUpdate(new Error('Simulated Network Failure'));
+      await flushMutation(updatePromise);
+    });
+
+    expect(client.getQueryData<Todo[]>(key)).toEqual([todo, confirmedSecond]);
+    expect(client.getQueryState(key)?.isInvalidated).toBe(true);
+    act(() => client.clear());
+  });
 });

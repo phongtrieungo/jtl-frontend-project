@@ -38,7 +38,7 @@ The initial entry is 35.28 kB (8.2%) smaller, or 8.29 kB (6.3%) smaller gzip. Th
 
 ### Verified baseline (2026-09-28)
 
-The current reproducible baseline is `pnpm test` with 93 JavaScript tests (33 in `packages/shared`, 31 in `packages/todos`, 15 in `packages/users`, and 14 in `apps/web`), `pnpm test:e2e` with 3 Playwright flows, and `dotnet test services/bff.tests/Bff.Tests.csproj` with 24 integration tests. The user feature now runs independently; the web suite includes explicit loading, unexpected-error, and not-found recovery coverage.
+The current reproducible baseline is `pnpm test` with 96 JavaScript tests (33 in `packages/shared`, 34 in `packages/todos`, 15 in `packages/users`, and 14 in `apps/web`), `pnpm test:e2e` with 3 Playwright flows, and `dotnet test services/bff.tests/Bff.Tests.csproj` with 24 integration tests. The user feature runs independently; the web suite includes explicit loading, unexpected-error, and not-found recovery coverage.
 
 The current root `pnpm lint` command runs the standalone package-boundary validator, ESLint with zero warnings, strict workspace TypeScript checking, and the deterministic Prettier check. ESLint uses recommended TypeScript, React, and JSX accessibility rules, with the stable Rules of Hooks and exhaustive dependency checks promoted to errors. Package-specific import restrictions duplicate the most important architectural boundaries inside editor-visible static analysis while `scripts/validate-boundaries.mjs` remains the independent repository guardrail.
 
@@ -56,9 +56,10 @@ The project uses a four-layer pyramid:
 Each task mutation's key behavior is verified in this order:
 
 1. Seed the query cache with a known per-user task list and trigger the mutation.
-2. Assert that the in-flight list query is cancelled and the cache immediately contains a temporary task marked optimistic.
-3. Resolve the API promise and assert that settled invalidation is requested so server state can reconcile the cache.
-4. In a separate case, reject the API promise (or enable chaos mode), then assert the cache exactly matches its original snapshot, the temporary row is gone, and a non-blocking error toast is emitted.
-5. For create, repeat with an initially empty cache to confirm rollback removes the optimistic cache entry rather than leaving stale data. For delete, verify the exact original list order is restored.
+2. Assert that the in-flight list query is cancelled and the affected cache record immediately enters its optimistic state.
+3. Resolve the API promise and assert that the returned server record replaces the optimistic record before settled invalidation requests canonical reconciliation.
+4. In a separate case, reject the API promise (or enable Chaos Mode), then assert the affected record returns to its snapshotted state, the mutation's temporary row is gone when applicable, unrelated records are unchanged, and a non-blocking error toast is emitted.
+5. Start an independent second mutation while the first is unresolved, confirm the second, then reject the first. Assert that operation-scoped rollback preserves the later confirmed change and that invalidation waits for the final overlapping settlement. Conflicting controls for the same optimistic record are unavailable until settlement.
+6. For create, repeat with an initially empty cache to confirm rollback removes the optimistic cache entry rather than leaving stale data. For delete, verify that only the deleted record is restored at its original position.
 
-The hook suites cover create, toggle, edit, and delete across immediate optimistic state, successful settlement/invalidation, exact snapshot rollback, and retryable error toasts. Discovery suites cover Zod URL normalization, deep-link restoration, the 300 ms debounce, labelled controls, and distinct empty states. The Playwright suite confirms rollback behavior and reload persistence in the composed experience, while BFF integration tests cover HTTP chaos behavior.
+The hook suites cover create, toggle, edit, and delete across immediate optimistic state, success reconciliation, operation-scoped rollback, overlapping independent writes, and retryable error toasts. Bulk tests prove per-item partial rollback. Completion recovery is identity-preserving Undo; delete recovery is Restore because the API recreates the task with a potentially different server ID. Discovery suites cover Zod URL normalization, deep-link restoration, the 300 ms debounce, labelled controls, and distinct empty states. The Playwright suite confirms rollback behavior and reload persistence in the composed experience, while BFF integration tests cover HTTP chaos behavior.

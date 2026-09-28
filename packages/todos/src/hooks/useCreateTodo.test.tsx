@@ -4,6 +4,7 @@ import { apiClient, todoKeys, toastsAtom, type Todo } from '@todo/shared';
 import { getDefaultStore } from 'jotai/vanilla';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { useCreateTodo } from './useCreateTodo';
+import { useUpdateTodo } from './useUpdateTodo';
 
 const userId = 'user-1';
 const input = { title: 'Review project brief', assigneeId: userId };
@@ -108,6 +109,44 @@ describe('useCreateTodo', () => {
     });
     await waitFor(() => expect(result.current.isError).toBe(true));
     expect(queryClient.getQueryData(queryKey)).toBeUndefined();
+    act(() => queryClient.clear());
+  });
+
+  it('removes only its temporary row when a later edit succeeds', async () => {
+    let rejectCreate!: (error: Error) => void;
+    vi.spyOn(apiClient, 'createTodo').mockReturnValue(
+      new Promise<Todo>((_resolve, reject) => { rejectCreate = reject; }),
+    );
+    const confirmedEdit = { ...existingTodo, title: 'Confirmed kickoff plan' };
+    vi.spyOn(apiClient, 'updateTodo').mockResolvedValue(confirmedEdit);
+    const queryClient = createQueryClient();
+    const queryKey = todoKeys.byUser(userId);
+    queryClient.setQueryData(queryKey, [existingTodo]);
+    const { result } = renderHook(() => ({ create: useCreateTodo(), update: useUpdateTodo() }), {
+      wrapper: createWrapper(queryClient),
+    });
+
+    let createPromise!: Promise<Todo>;
+    await act(async () => {
+      createPromise = result.current.create.mutateAsync(input);
+      await new Promise<void>((resolve) => setTimeout(resolve, 0));
+    });
+    await act(async () => {
+      await result.current.update.mutateAsync({ todo: existingTodo, changes: { title: confirmedEdit.title } });
+    });
+    expect(queryClient.getQueryData<Todo[]>(queryKey)).toEqual([
+      confirmedEdit,
+      expect.objectContaining({ title: input.title, isOptimistic: true }),
+    ]);
+    expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(false);
+
+    await act(async () => {
+      rejectCreate(new Error('Simulated Network Failure'));
+      await flushMutation(createPromise);
+    });
+
+    expect(queryClient.getQueryData<Todo[]>(queryKey)).toEqual([confirmedEdit]);
+    expect(queryClient.getQueryState(queryKey)?.isInvalidated).toBe(true);
     act(() => queryClient.clear());
   });
 });

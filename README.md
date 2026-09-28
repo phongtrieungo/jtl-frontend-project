@@ -1,210 +1,154 @@
-# User & ToDo Management Platform
+# Taskwell — React Architecture Take-Home
 
-> **Senior Frontend Engineer Take-Home Assessment**  
-> A Turborepo monorepo demonstrating strict package boundaries, resilient optimistic mutations, type-safe routing, scoped cross-cutting state, and an evaluator-first dual-mode backend adapter.
+Taskwell is a small user-and-task application built to make senior React engineering decisions easy to inspect. The core thesis is simple: TanStack Query owns server state, TanStack Router owns validated URL state, Jotai owns only small cross-cutting UI preferences, feature packages stay independent, and the app shell composes them.
 
----
+## Five-minute evaluator path
 
-## 1. Quick Overview & Tech Stack
+### 1. Launch
 
-- **Monorepo Engine:** [Turborepo](https://turbo.build/repo) + [pnpm](https://pnpm.io/) workspaces
-- **Web Application (`apps/web`):** React 18, TypeScript, Vite, [TanStack Router](https://tanstack.com/router)
-- **Shared Core Library (`packages/shared`):** Centralized domain types, query key factories, Dual-Mode API client, in-browser mock engine, Jotai atoms, accessible UI kit primitives
-- **Backend Service (`services/bff`):** ASP.NET Core (.NET 10) Minimal API with thread-safe in-memory store and latency/chaos simulation middleware
-- **Data Fetching & Caching:** [TanStack Query v5](https://tanstack.com/query) with hierarchical query key factories
-- **State Management:** [Jotai](https://jotai.org/) for atomic cross-cutting UI state (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`)
-- **Styling & Tokens:** TailwindCSS (Slate + Indigo palette)
-- **Form Validation:** Zod with accessible inline error binding
-- **Accessibility:** Targets WCAG 2.1 AA through semantic HTML, visible keyboard focus rings, and explicit ARIA contracts
-- **Testing:** Vitest, React Testing Library, jsdom, Playwright, and xUnit integration tests for the BFF
+Prerequisites are Node.js 18+ and pnpm 9+. The default path needs no .NET runtime.
 
----
-
-## 2. Monorepo Architecture & Package Boundaries
-
-```
-                              ┌────────────────┐
-                              │    apps/web    │  (Composition & Routes)
-                              └───────┬────────┘
-                                      │
-                 ┌────────────────────┴────────────────────┐
-                 ▼                                         ▼
-      ┌─────────────────────┐                   ┌─────────────────────┐
-      │   packages/users    │                   │   packages/todos    │
-      │   (User Domain)     │                   │   (Todo Domain)     │
-      └──────────┬──────────┘                   └──────────┬──────────┘
-                 │                                         │
-                 │     NO SIDEWAYS DEPENDENCY ALLOWED     │
-                 │     (users ⇎ todos: strictly isolated)  │
-                 │                                         │
-                 └────────────────────┬────────────────────┘
-                                      │
-                                      ▼
-                           ┌─────────────────────┐
-                           │   packages/shared   │
-                           │  (Dual-Mode Client, │
-                           │  UI Kit, Atoms, DB) │
-                           └──────────┬──────────┘
-                                      │
-                     ┌────────────────┴────────────────┐
-                     │ (Dual-Mode Adapter Resolution)  │
-                     ▼                                 ▼
-         ┌───────────────────────┐         ┌───────────────────────┐
-         │     services/bff      │         │  In-Browser Mock DB   │
-         │  (ASP.NET Core .NET 10 │         │   (Zero-Dependency    │
-         │     Minimal API)      │         │   Reviewer Fallback)  │
-         └───────────────────────┘         └───────────────────────┘
-```
-
-### Boundary Guarantees:
-- **Zero Sideways Imports (Rule 1):** `packages/users` and `packages/todos` never import each other directly. All shared domain contracts, cross-cutting state atoms, and UI primitives flow through `packages/shared`.
-- **Decoupled Backend Service (Rule 5):** `services/bff` is a standalone .NET 10 service. Frontend interaction is mediated strictly over HTTP REST contracts defined in `packages/shared`.
-- **Evaluator-First Dual-Mode Adapter:** Evaluators without the .NET SDK installed can run the complete frontend immediately with the in-browser mock engine (`pnpm dev`). Evaluators with .NET 10 can run the full-stack experience (`pnpm dev:full`).
-
----
-
-## 3. Package & Service Directory Breakdown
-
-| Path | Type | Status | Responsibilities |
-| :--- | :--- | :--- | :--- |
-| **`packages/shared`** | Core Library | **Complete (Sprint 2)** | Domain types, query keys (`userKeys`, `todoKeys`), session-stable dual-mode API client, localStorage-backed in-browser mock DB, Jotai atoms (`activeUserIdAtom`, `isChaosActiveAtom`, `toastsAtom`), and accessible UI primitives. |
-| **`services/bff`** | Backend Service | **Complete (Sprint 3)** | ASP.NET Core (.NET 10) Minimal API with health, user, todo, and chaos endpoints; seeded thread-safe in-memory stores; OpenAPI; latency/chaos middleware; and 24 xUnit integration tests. |
-| **`packages/users`** | Feature Module | **Complete (Sprint 4); test parity planned for Story 9.3** | Zod user validation, TanStack Query hooks, accessible user creation form, profile card, and directory. Dedicated package-level unit/component coverage is an identified cleanup gap. |
-| **`packages/todos`** | Feature Module | **Complete (Sprint 5)** | Zod task validation, user-scoped query hook, optimistic create with rollback and toast feedback, accessible create form, task list and saving status; includes schema and mutation lifecycle tests. |
-| **`apps/web`** | Web Application | **Implemented (Sprint 6)** | TanStack Router shell with dashboard, user directory/profile, and user-filtered task board. |
-
----
-
-## 4. Getting Started & Local Development
-
-### Prerequisites
-- **Node.js:** `>= 18.0.0` (Tested on `v22.x`)
-- **Package Manager:** `pnpm >= 9.x`
-- **.NET SDK (Optional for Mock Mode):** `.NET 10.0 SDK` (only needed for `services/bff`)
-
-### Installation
 ```bash
-git clone https://github.com/phongtrieungo/jtl-frontend-project.git
-cd jtl-frontend-project
 pnpm install
-
-# Install the browser used by the Playwright end-to-end suite
-pnpm exec playwright install chromium
+pnpm dev
 ```
 
-### Verification & Testing
+Open the Vite URL (normally `http://localhost:5173`). The shared API adapter automatically uses the in-browser mock engine when the optional BFF is unavailable.
+
+### 2. See a successful optimistic write
+
+1. Open **Tasks**.
+2. Choose an assignee.
+3. Create a task.
+4. Notice that the row appears immediately with **Saving...**, then reconciles to the server-assigned record.
+
+### 3. See rollback under failure
+
+1. Turn **Chaos off** to **Chaos on** in the header.
+2. Create another task.
+3. Notice the temporary row appear, disappear when the request fails, and produce a retryable error toast explaining that the change was reverted.
+
+### 4. Inspect the evidence
+
 ```bash
-# Run typechecking across all packages
-pnpm typecheck
+# Focused optimistic, overlap, rollback, and recovery tests
+pnpm --filter @todo/todos test
 
-# Run test suites across all packages
-pnpm test
-
-# Run the composed mock-mode browser resilience flow
-pnpm test:e2e
-
-# Run the BFF integration tests (.NET 10)
-dotnet test services/bff.tests/Bff.Tests.csproj
-
-# Run build across all packages in topological order
-pnpm build
-
-# Run ESLint, strict TypeScript, package-boundary validation, and formatting checks
+# Static analysis, strict types, boundaries, and formatting
 pnpm lint
 
-# Check the deterministic formatting baseline independently
-pnpm format:check
+# All JavaScript tests and the composed browser flows
+pnpm test
+pnpm test:e2e
 ```
 
-### Running the Application
+The most direct implementation and regression evidence is in:
+
+- `packages/todos/src/hooks/useCreateTodo.ts`
+- `packages/todos/src/hooks/useTodoLifecycle.test.tsx`
+- `packages/todos/src/hooks/useCreateTodo.test.tsx`
+- `packages/todos/src/hooks/useBulkTodoActions.test.tsx`
+- `e2e/task-resilience.spec.ts`
+
+For a spoken review, use [the concise interview walkthrough](docs/interview-walkthrough.md).
+
+## Architecture thesis
+
+```text
+                         apps/web
+                 routes + composition shell
+                    /              \
+          packages/users      packages/todos
+                    \              /
+                    packages/shared
+          types, query keys, API adapter, UI, atoms
+                    /              \
+             optional BFF       browser mock
+```
+
+- `packages/users` and `packages/todos` never import each other. `apps/web` owns cross-feature composition and typed navigation.
+- TanStack Query is the sole owner of users and tasks. Jotai holds only active-user, Chaos Mode, toast, and display-preference state.
+- Task mutations cancel relevant fetches, snapshot the affected cache, update immediately, roll back only their own operation on failure, and reconcile after settlement. When operations overlap on one user list, the final settlement coalesces invalidation so an intermediate refetch cannot erase a still-pending optimistic record.
+- Independent task mutations may overlap without an earlier failure erasing a later confirmed change. Conflicting controls for the same optimistic task are unavailable until it settles.
+- Search, filter, sort, and assignee state live in Zod-validated URL search parameters, making task views linkable and restorable.
+- Accessible labels, inline validation, visible focus, textual status, live regions, retry actions, and route recovery are part of the component contracts.
+- The typed API adapter chooses one backend for the page session. It never silently switches data stores after work begins.
+
+See [docs/architecture.md](docs/architecture.md) for the full topology and [docs/reflection.md](docs/reflection.md) for measured loading and testing trade-offs.
+
+## Verification baseline
+
+The Story 9.5 baseline is:
+
+- 96 JavaScript tests: 33 shared, 34 todos, 15 users, and 14 web;
+- 3 Playwright flows for rollback, refresh persistence, and SPA navigation;
+- 24 xUnit BFF integration tests;
+- zero-warning ESLint, strict TypeScript, package-boundary validation, formatting checks, and production build.
+
+Run the complete gate:
 
 ```bash
-# Mode 1: Zero-Dependency In-Browser Mock Engine (No .NET required)
+pnpm lint
+pnpm typecheck
+pnpm test
+pnpm build
+pnpm test:e2e
+dotnet test services/bff.tests/Bff.Tests.csproj
+```
+
+The final command requires .NET 10; all frontend behavior remains reviewable without it.
+
+## Known trade-offs
+
+- The dashboard intentionally reuses one task query per user so optimistic cache changes appear everywhere. This creates an N+1 request shape; more than 20 active users or a measured p95 budget breach is the trigger for an aggregate endpoint.
+- Restoring a bulk-deleted task recreates it through the API. It receives a new server ID, so the UI calls this **Restore**, not identity-preserving undo. Bulk completion is genuinely undoable because the existing task identity is retained.
+- Different task records can mutate concurrently. Controls for one optimistic record are locked, so conflicting same-record writes are not supported or queued.
+- Route components are lazy-loaded and the initial entry is smaller, but total emitted JavaScript is slightly larger. The measured sizes are recorded without claiming an unmeasured runtime speedup.
+- The BFF uses in-memory stores and simulated latency/chaos. Authentication, durable production storage, multi-client conflict resolution, and an aggregate dashboard endpoint are intentionally outside this take-home.
+
+## Running modes
+
+```bash
+# Automatic BFF health check with stable mock fallback
 pnpm dev
 
-# Mode 2: Full-stack app (requires .NET 10 SDK)
+# Start .NET 10 first, then Vite in fixed BFF mode
 pnpm dev:full
 ```
 
-For separate terminals in full-stack mode, run `dotnet run --project services/bff/bff.csproj -- --urls http://localhost:5000` and `VITE_API_MODE=bff pnpm dev:web`.
+For separate full-stack terminals:
 
-The BFF health endpoint is `/api/health`; Swagger UI is available at `/swagger` in the Development environment. `pnpm dev` runs the web app in its configured mode: `auto` performs one startup health check, chooses BFF or mock, and keeps that choice for the page session so writes never cross between stores. Mock users and tasks persist in browser `localStorage`, including across refreshes. `pnpm dev:full` waits for Kestrel to listen on `http://localhost:5000`, then starts Vite with fixed `bff` mode; both processes stop together. The root `pnpm test` command runs JavaScript workspace tests; `pnpm test:e2e` starts a mock-mode Vite server and executes the Playwright resilience and refresh-persistence flows; use the `dotnet test` command above for BFF coverage.
+```bash
+dotnet run --project services/bff/bff.csproj -- --urls http://localhost:5000
+VITE_API_MODE=bff pnpm dev:web
+```
 
----
+The BFF exposes `/api/health` and Development Swagger UI at `/swagger`. The browser mock persists its versioned data in `localStorage`; explicit BFF mode surfaces outages instead of redirecting failed writes to mock data.
 
-## 5. Current Backend: Sprint 03 BFF
+## Repository map
 
-The BFF targets .NET 10 and uses seeded `ConcurrentDictionary` stores, so no external database is needed. Its API includes:
+| Path | Responsibility |
+| --- | --- |
+| `apps/web` | TanStack Router shell, lazy pages, cross-feature composition, dashboard, and route recovery |
+| `packages/shared` | Domain contracts, query keys, dual-mode API client, mock engine, atoms, and accessible UI primitives |
+| `packages/users` | Independent user queries, creation, directory, detail UI, and package tests |
+| `packages/todos` | Task discovery, optimistic lifecycle mutations, bulk actions, drafts, insights, and package tests |
+| `services/bff` | Optional ASP.NET Core .NET 10 Minimal API and thread-safe in-memory stores |
+| `e2e` | Composed Playwright user flows |
 
-- `GET /api/health`
-- `GET /api/users`, `GET /api/users/{id}`, and `POST /api/users`
-- `GET /api/todos?userId={id}`, `GET /api/todos/{id}`, `POST /api/todos`, `PUT /api/todos/{id}`, `PUT /api/todos/{id}/toggle`, and `DELETE /api/todos/{id}`
-- `GET /api/chaos`, `POST /api/chaos`, and `POST /api/chaos/toggle`
+## Documentation
 
-Requests receive 200–400 ms of simulated latency by default. Send `X-Simulate-Chaos: true`, or enable server-side chaos through `/api/chaos`, to make mutating user and todo requests return a simulated 500 response. The integration tests use `X-Skip-Latency: true` to keep test runs fast.
+- [Product requirements](docs/prd.md)
+- [Architecture](docs/architecture.md)
+- [Sprint plan](docs/sprint-planning.md)
+- [Performance and testing reflection](docs/reflection.md)
+- [Interview walkthrough](docs/interview-walkthrough.md)
+- [React interview study guide](docs/react-interview-study-guide.md)
+- [Angular-to-React architecture guide](docs/angular-to-react-architecture-guide.md)
+- [AI engineering journey](ai-journey/master-journey.md)
 
-The shared package provides the dual-mode API client and mock engine. The user and ToDo feature packages expose their UI and data hooks for composition in `apps/web`. The web application provides the dashboard, user directory/profile, task board, active user switcher, chaos control, backend status, and toast viewport.
+The Markdown study guides and `scripts/render-study-guides.mjs` are source artifacts. Their matching HTML files are review-ready generated outputs; regenerate them with `pnpm docs:guides`. `docs/application-workflow-deck.html` is a hand-authored standalone presentation.
 
-## 6. Current Sprint Status
+## Delivery status
 
-Sprints 0–8, including both stretch stories, are implemented. The React showcase adds optimistic create/toggle/edit/delete lifecycles, shareable discovery, query-derived dashboard insights, accessible bulk actions with partial rollback and recovery, deterministic feature tests, two composed Playwright resilience flows, draft persistence, and display preferences. Sprint 9 is in progress as a cleanup sprint with no new product scope; Story 9.1 establishes the repository-truth baseline described here. See [the sprint plan](docs/sprint-planning.md#sprint-9-interview-readiness--repository-cleanup).
-
-The ToDo feature is exported from `@todo/todos` and includes `TodoCreateForm`, `TodoList`, `TodoItemRow`, `useTodosByUser`, `useCreateTodo`, and `createTodoSchema`. The create hook cancels the active user-list query, snapshots cached todos, inserts a temporary item, restores the snapshot on failure, reports a toast, and invalidates the list when the mutation settles. Chaos mode is passed to the shared API client.
-
-### Delivered Showcase Sprint
-
-Sprint 8 evolved the task board without changing its monorepo boundaries. Its delivered core scope is:
-
-- optimistic task completion, editing, and deletion with deterministic Chaos Mode rollback;
-- shareable, Zod-validated URL filters for assignee, status, search, and sort;
-- query-derived dashboard insights with typed drill-down navigation; and
-- accessible bulk completion/deletion with per-item progress, isolated partial rollback, and an 8-second undo action;
-- feature tests for immediate optimistic state, success reconciliation, and exact failure rollback; and
-- Playwright verification of user selection, task creation, Chaos Mode, the visible saving state, and retryable rollback feedback; and
-- per-user valid task drafts plus persisted light/dark/system theme and compact/comfortable density preferences.
-
-The verified baseline is 75 JavaScript tests (33 shared, 31 todos, 11 web), 2 Playwright flows, and 24 BFF integration tests. The root `pnpm lint` command runs ESLint with zero warnings, strict workspace TypeScript, package-boundary validation, and the deterministic formatting check. ESLint covers TypeScript correctness, React Hooks dependencies, JSX accessibility, duplicate/type-only imports, and package import restrictions. Each frontend workspace also exposes an independent `lint` script.
-
-Prettier is the repository's sole formatter; ESLint does not enforce competing layout rules. Story 9.2 deliberately scopes `pnpm format` and `pnpm format:check` to the previously compressed `packages/users/src` source and the root ESLint configuration, keeping this cleanup diff reviewable. Route modules remain eagerly loaded today; measured route splitting is Story 9.4 scope.
-
----
-
-## 7. Documentation & Specifications Index
-
-The repository documentation set includes:
-
-| Document | Path | Purpose |
-| :--- | :--- | :--- |
-| **Product Requirements (PRD)** | [docs/prd.md](docs/prd.md) | Exhaustive requirements, feature scope, NFRs, and evaluation alignment. |
-| **System Architecture** | [docs/architecture.md](docs/architecture.md) | Detailed topology, .NET 10 BFF specification, sequence diagrams, and trade-offs. |
-| **Sprint Planning Roadmap** | [docs/sprint-planning.md](docs/sprint-planning.md) | 9-sprint agile delivery plan with user stories and Gherkin acceptance criteria. |
-| **Frontend Coding Skill** | [.agents/skills/frontend-coding/SKILL.md](.agents/skills/frontend-coding/SKILL.md) | TypeScript, boundary enforcement, query key factories, and optimistic update patterns. |
-| **Frontend Design Skill** | [.agents/skills/frontend-design/SKILL.md](.agents/skills/frontend-design/SKILL.md) | Slate + Indigo design system, optimistic visual states, and WCAG AA guidelines. |
-| **Frontend Testing Skill** | [.agents/skills/frontend-testing/SKILL.md](.agents/skills/frontend-testing/SKILL.md) | 4-layer testing pyramid and canonical Vitest/RTL optimistic rollback test recipes. |
-| **Backend .NET Skill** | [.agents/skills/backend-dotnet/SKILL.md](.agents/skills/backend-dotnet/SKILL.md) | ASP.NET Core .NET 10 Minimal API, thread-safe in-memory stores, chaos/latency middleware. |
-| **Agent Directives** | [AGENTS.md](AGENTS.md) / [GEMINI.md](GEMINI.md) | Continuous instructions keeping all agent operations aligned to specifications. |
-| **AI Journey Log** | [ai-journey/master-journey.md](ai-journey/master-journey.md) | Audit trail of prompts, skills, decisions, and engineer overrides. |
-
-### Documentation artifact policy
-
-- `docs/react-interview-study-guide.md`, `docs/angular-to-react-architecture-guide.md`, and `scripts/render-study-guides.mjs` are source artifacts intended for version control.
-- Their matching `.html` files are review-ready generated outputs, also intended for version control so evaluators can open them without a Markdown toolchain. Regenerate both deterministically with `pnpm docs:guides` and review source and output in the same change.
-- `docs/application-workflow-deck.html` is a hand-authored, standalone source artifact rather than renderer output; edit and review it directly.
-- None of the current guide/deck artifacts is classified as local-only. Temporary browser/test output remains excluded through `.gitignore`.
-
----
-
-## 8. Development Roadmap (9 Sprints)
-
-- [x] **Sprint 0:** Product Requirements, Architecture, Skills & Sprint Planning Baseline
-- [x] **Sprint 1:** Monorepo Foundation & Tooling Setup (`turbo.json`, `pnpm-workspace.yaml`, configs)
-- [x] **Sprint 2:** Core Domain, Dual-Mode API Adapter & Shared UI Kit (`packages/shared`)
-- [x] **Sprint 3:** .NET 10 Backend-for-Frontend Service (`services/bff`)
-- [x] **Sprint 4:** User Feature Package (`packages/users`)
-- [x] **Sprint 5:** ToDo Feature Package & Optimistic Mutation Engine (`packages/todos`)
-- [x] **Sprint 6:** Shippable Web Application Shell & TanStack Router (`apps/web`)
-- [x] **Sprint 7:** Production Reflections, AI Journey Artifacts & Final Polish
-- [x] **Sprint 8:** React Showcase — Resilient Task Lifecycle & Discovery _(Stories 8.1–8.6 complete)_
-- [ ] **Sprint 9:** Interview Readiness & Repository Cleanup _(in progress; Stories 9.1–9.2 complete, no new product features)_
-
-Performance and testing trade-offs, including current query cache settings, route loading status, and the four-layer test strategy, are documented in [docs/reflection.md](docs/reflection.md).
+Sprints 0–8 and Stories 9.1–9.5 are complete. Sprint 9 froze product scope after repository cleanup, real linting, user-feature parity, deliberate runtime boundaries, measured bundle evidence, concurrency-safe mutation rollback, and the evaluator handoff above.

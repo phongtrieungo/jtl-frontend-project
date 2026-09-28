@@ -122,13 +122,21 @@ describe('useBulkTodoActions', () => {
     });
     expect(client.getQueryData<Todo[]>(key)).toEqual([second]);
 
-    const undoToast = getDefaultStore().get(toastsAtom).find((item) => item.action?.label === 'Undo');
-    act(() => undoToast?.action?.onAction());
+    const restoreToast = getDefaultStore().get(toastsAtom).find((item) => item.action?.label === 'Restore');
+    expect(restoreToast?.message).toContain('restore deleted tasks as new tasks');
+    act(() => restoreToast?.action?.onAction());
     await waitFor(() => expect(client.getQueryData<Todo[]>(key)).toEqual([recreated, second]));
     expect(create).toHaveBeenCalledWith(
       { title: first.title, assigneeId: first.assigneeId },
       { chaos: false },
     );
+    expect(getDefaultStore().get(toastsAtom)).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        type: 'success',
+        title: 'Deleted tasks restored',
+        message: expect.stringContaining('new server ID'),
+      }),
+    ]));
     act(() => client.clear());
   });
 });

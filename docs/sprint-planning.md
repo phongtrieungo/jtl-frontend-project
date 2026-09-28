@@ -317,7 +317,7 @@ Each story adheres to standard agile requirements:
 - This is one time-boxed showcase sprint. Core stories are required; stretch stories start only after all core acceptance criteria and tests pass.
 - `packages/todos` owns task-domain hooks, schemas, and presentational components. `apps/web` composes those exports into routes and dashboard views. `packages/users` remains independent of `packages/todos`.
 - Shared API contracts, query keys, reusable UI primitives, and cross-cutting atoms belong in `packages/shared`. No feature package performs direct HTTP calls.
-- Every write mutation preserves the established contract: cancel relevant queries, snapshot cache, optimistically update, restore the exact snapshot on error with an accessible toast, and invalidate on settlement.
+- Every write mutation preserves the established contract: cancel relevant queries, snapshot cache, optimistically update, restore that operation's affected record on error with an accessible toast, and invalidate on settlement. Unrelated later cache changes must survive rollback.
 - URL search state is validated with Zod and owned by TanStack Router. Jotai remains limited to ephemeral UI state such as a bulk-selection or panel-open state; it must not duplicate task records or filters persisted in the URL.
 
 ### Story 8.1: Optimistic Task Lifecycle
@@ -425,7 +425,7 @@ Each story adheres to standard agile requirements:
 ---
 
 ## Sprint 9: Interview Readiness & Repository Cleanup
-**Status:** In progress — Stories 9.1–9.3 complete (2026-09-28)
+**Status:** Complete — Stories 9.1–9.5 delivered (2026-09-28)
 **Goal:** Convert the completed showcase into a concise, trustworthy senior React interview artifact. This sprint adds no product features; it removes contradictory claims, closes quality-tooling gaps, brings the user feature to the same testing standard as the task feature, and makes the strongest React decisions easy to review and demonstrate.
 
 ### Sprint Guardrails
@@ -490,7 +490,7 @@ Each story adheres to standard agile requirements:
 ### Story 9.4: Runtime Boundaries, Loading Strategy & Honest Performance Evidence
 - **ID:** `STORY-904`
 - **Priority:** P1
-- **Status:** Delivered (2026-09-28)
+- **Status:** Complete (2026-09-28)
 - **User Story:**
   *As an evaluator, I want failures and loading boundaries to be deliberate and performance claims to be measured so that the application demonstrates production judgment rather than checklist architecture.*
 - **Scope & Targets:**
@@ -507,7 +507,7 @@ Each story adheres to standard agile requirements:
 ### Story 9.5: Mutation Semantics & Interview Handoff
 - **ID:** `STORY-905`
 - **Priority:** P1
-- **Status:** Planned
+- **Status:** Complete (2026-09-28)
 - **User Story:**
   *As an interviewer, I want mutation behavior and the project walkthrough to use precise language so that I can distinguish implemented guarantees from demo conveniences.*
 - **Scope & Targets:**
